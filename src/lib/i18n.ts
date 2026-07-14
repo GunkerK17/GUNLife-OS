@@ -1,0 +1,336 @@
+export const locales = ["vi", "en"] as const;
+
+export type Locale = (typeof locales)[number];
+
+export const defaultLocale: Locale = "vi";
+
+export const dictionaries = {
+  en: {
+    app: {
+      subtitle: "Your personal life OS",
+      signedIn: "Signed in",
+      supabaseMissing:
+        "Supabase env is missing. Add `.env.local` to enable live auth and data.",
+    },
+    common: {
+      language: "Language",
+      english: "English",
+      vietnamese: "Vietnamese",
+    },
+    goals: {
+      badge: "Goals OS",
+      title: "Goal command center",
+      subtitle:
+        "Set the big target, break it into daily actions, then link it to Skills, Timeline and the right module.",
+      newGoal: "New goal plan",
+      activeGoals: "active goals",
+      goalTasksToday: "goal tasks today",
+      linkedSkills: "linked skills",
+      selectedDate: "selected date",
+      dailyPlan: "Daily plan",
+      completion: "Completion",
+      target: "Target",
+      current: "Current",
+      todayAction: "Today action",
+      openTimeline: "Open Timeline",
+      dayRoadmap: "Day-by-day roadmap",
+      dayRoadmapHint:
+        "Each date gets its own action. Timeline reads from this plan.",
+      updateProgress: "Update progress",
+      saveProgress: "Save progress",
+      linkedModules: "Linked modules",
+      linkedSkillsTitle: "Linked skills",
+      noLinkedSkill:
+        "No linked skill. Learning goals can create one automatically.",
+      createTitle: "Create goal plan",
+      createDescription:
+        "Example: English 30 days, lose 8kg, save 10M. LifeOS creates the daily breakdown and optional linked skill.",
+      active: "Active",
+      completed: "Completed",
+      paused: "Paused",
+      abandoned: "Abandoned",
+      done: "Done",
+      skip: "Skip",
+      study: "Study",
+      studyDay: "Study day",
+      pending: "Pending",
+      days: "days",
+      day: "Day",
+      practices: "practices",
+      categoryCareer: "Career",
+      categoryFinance: "Finance",
+      categoryHealth: "Health",
+      categoryLearning: "Learning",
+      categoryOther: "Other",
+      categoryPersonal: "Personal",
+      noTaskDate: "No task for this date",
+      noTaskDateHint: "This goal may start later or has already ended.",
+      noRoadmap: "No roadmap generated yet.",
+      goalTitle: "Goal title",
+      category: "Category",
+      startDate: "Start date",
+      targetDays: "Target days",
+      coreHabit: "Core habit / anchor action",
+      coreHabitHint:
+        "LifeOS keeps this as the anchor, then creates a different task for each day.",
+      roadmapLogic: "Roadmap logic",
+      learningSkill: "Learning / Skill",
+      learningSkillHint:
+        "Foundation -> Input -> Practice -> Output -> Review -> Challenge.",
+      bodyHealth: "Body / Health",
+      bodyHealthHint:
+        "Strength -> Cardio -> Nutrition -> Strength B -> Body check -> Recovery.",
+      weeklyFocus: "Weekly focus",
+      targetValue: "Target value",
+      currentValue: "Current value",
+      unit: "Unit",
+      linkToSkills: "Link to Skills",
+      linkToSkillsHint:
+        "Best for learning goals. It also creates skill practice tasks so Timeline can schedule them.",
+      description: "Description",
+      creating: "Creating...",
+      createGoalPlan: "Create goal plan",
+      goalTitlePlaceholder: "Speak English in 30 days",
+      dailyTaskPlaceholder: "Learn 20 words, walk 8k steps, save 50k...",
+      weeklyFocusPlaceholder: "Week 1: foundation, Week 2: consistency...",
+      skillNamePlaceholder: "English communication",
+      descriptionPlaceholder:
+        "Why this goal matters, what success looks like...",
+      taskDescriptionPlaceholder:
+        "Day 1: Learn 20 words about food and record 2 minutes speaking...",
+      lessonNotePlaceholder: "https://youtube.com/... or note for this day",
+      beginner: "Beginner",
+      intermediate: "Intermediate",
+      advanced: "Advanced",
+      editDayTask: "Edit day task",
+      editDayTaskHint: "Customize exactly what you study/do on this day.",
+      whatToDo: "What to do that day",
+      lessonLinkNote: "Lesson link / note",
+      lessonLink: "Lesson link",
+      lessonLinkHint:
+        "Example: Day 1 20 words, Day 2 50 words, each day can have its own link.",
+      cancel: "Cancel",
+      saving: "Saving...",
+      saveDayTask: "Save day task",
+      demoMode: "Demo mode: add Supabase env to save goals.",
+      noGoals: "No goals yet",
+      noGoalsHint:
+        "Create one goal and LifeOS will break it into daily tasks. Learning goals can create a linked Skill automatically.",
+      createFirstGoal: "Create first goal",
+      taskMarked: "Task updated. Timeline is synced.",
+      deleteConfirm:
+        "Delete this goal, its daily roadmap, linked skill, and synced timeline blocks?",
+      goalDeleted:
+        "Goal deleted. Linked skill and synced timeline blocks were removed too.",
+      goalCreated: "Goal plan created.",
+      dayTaskUpdated: "Day task updated. Timeline is synced.",
+      goalProgressSaved: "Goal progress saved.",
+      howItLinks: "How it links",
+      linkFlow: "Goal -> Daily tasks -> Skills -> Timeline",
+      linkHint:
+        "Tick a goal task here and the matching Timeline block updates too. Learning goals also create skill practice tasks.",
+    },
+    lifeScore: {
+      title: "Life Score",
+      status: "Great",
+      message: "Keep going",
+    },
+    lifeLevel: {
+      title: "Life Level",
+      level: "Level",
+      next: "Next level",
+      days: "days",
+      setup: "Add your birthday to unlock daily XP",
+    },
+    nav: {
+      dashboard: "Dashboard",
+      timeline: "Timeline",
+      workout: "Workout",
+      activities: "Activities",
+      nutrition: "Nutrition",
+      weight: "Weight",
+      goals: "Goals",
+      skills: "Skills",
+      finance: "Finance",
+      journal: "Journal",
+      ai: "AI Assistant",
+      settings: "Settings",
+      profile: "Profile",
+      logout: "Log out",
+      addTask: "Add new task",
+      notifications: "Notifications",
+      menu: "Menu",
+      allModules: "All modules",
+    },
+  },
+  vi: {
+    app: {
+      subtitle: "Hệ điều hành đời sống cá nhân",
+      signedIn: "Đã đăng nhập",
+      supabaseMissing:
+        "Thiếu Supabase env. Thêm `.env.local` để bật auth và dữ liệu thật.",
+    },
+    common: {
+      language: "Ngôn ngữ",
+      english: "Tiếng Anh",
+      vietnamese: "Tiếng Việt",
+    },
+    goals: {
+      badge: "Mục tiêu OS",
+      title: "Trung tâm mục tiêu",
+      subtitle:
+        "Đặt mục tiêu lớn, chia thành việc hằng ngày, rồi liên kết với Kỹ năng, Lịch ngày và module phù hợp.",
+      newGoal: "Tạo mục tiêu",
+      activeGoals: "mục tiêu đang chạy",
+      goalTasksToday: "việc mục tiêu hôm nay",
+      linkedSkills: "kỹ năng liên kết",
+      selectedDate: "ngày đang xem",
+      dailyPlan: "Kế hoạch ngày",
+      completion: "Hoàn thành",
+      target: "Mục tiêu",
+      current: "Hiện tại",
+      todayAction: "Việc hôm nay",
+      openTimeline: "Mở lịch ngày",
+      dayRoadmap: "Lộ trình từng ngày",
+      dayRoadmapHint:
+        "Mỗi ngày có việc riêng. Timeline đọc dữ liệu từ kế hoạch này.",
+      updateProgress: "Cập nhật tiến độ",
+      saveProgress: "Lưu tiến độ",
+      linkedModules: "Module liên kết",
+      linkedSkillsTitle: "Kỹ năng liên kết",
+      noLinkedSkill:
+        "Chưa có kỹ năng liên kết. Goal học tập có thể tự tạo.",
+      createTitle: "Tạo kế hoạch mục tiêu",
+      createDescription:
+        "Ví dụ: học tiếng Anh 30 ngày, giảm 8kg, tiết kiệm 10 triệu. LifeOS sẽ tạo lộ trình ngày và kỹ năng liên kết nếu cần.",
+      active: "Đang chạy",
+      completed: "Hoàn thành",
+      paused: "Tạm dừng",
+      abandoned: "Bỏ mục tiêu",
+      done: "Xong",
+      skip: "Bỏ qua",
+      study: "Học",
+      studyDay: "Ngày học",
+      pending: "Đang chờ",
+      days: "ngày",
+      day: "Ngày",
+      practices: "buổi luyện",
+      categoryCareer: "Sự nghiệp",
+      categoryFinance: "Tài chính",
+      categoryHealth: "Sức khỏe",
+      categoryLearning: "Học tập",
+      categoryOther: "Khác",
+      categoryPersonal: "Cá nhân",
+      noTaskDate: "Chưa có việc cho ngày này",
+      noTaskDateHint: "Mục tiêu có thể bắt đầu sau hoặc đã kết thúc.",
+      noRoadmap: "Chưa tạo lộ trình.",
+      goalTitle: "Tên mục tiêu",
+      category: "Danh mục",
+      startDate: "Ngày bắt đầu",
+      targetDays: "Số ngày mục tiêu",
+      coreHabit: "Thói quen chính / việc neo",
+      coreHabitHint:
+        "LifeOS giữ việc này làm lõi, rồi tạo việc khác nhau cho từng ngày.",
+      roadmapLogic: "Logic lộ trình",
+      learningSkill: "Học tập / Kỹ năng",
+      learningSkillHint:
+        "Nền tảng -> Nạp kiến thức -> Luyện tập -> Đầu ra -> Ôn lại -> Thử thách.",
+      bodyHealth: "Body / Sức khỏe",
+      bodyHealthHint:
+        "Sức mạnh -> Cardio -> Dinh dưỡng -> Sức mạnh B -> Check body -> Hồi phục.",
+      weeklyFocus: "Trọng tâm theo tuần",
+      targetValue: "Giá trị mục tiêu",
+      currentValue: "Giá trị hiện tại",
+      unit: "Đơn vị",
+      linkToSkills: "Liên kết với Kỹ năng",
+      linkToSkillsHint:
+        "Phù hợp nhất cho mục tiêu học tập. Mục này cũng tạo task luyện kỹ năng để Timeline lên lịch.",
+      description: "Mô tả",
+      creating: "Đang tạo...",
+      createGoalPlan: "Tạo kế hoạch mục tiêu",
+      goalTitlePlaceholder: "Học tiếng Anh trong 30 ngày",
+      dailyTaskPlaceholder: "Học 20 từ, đi 8k bước, tiết kiệm 50k...",
+      weeklyFocusPlaceholder: "Tuần 1: nền tảng, Tuần 2: đều đặn...",
+      skillNamePlaceholder: "Giao tiếp tiếng Anh",
+      descriptionPlaceholder:
+        "Vì sao mục tiêu này quan trọng, thành công trông như thế nào...",
+      taskDescriptionPlaceholder:
+        "Ngày 1: Học 20 từ chủ đề ăn uống và ghi âm nói 2 phút...",
+      lessonNotePlaceholder: "https://youtube.com/... hoặc ghi chú ngày này",
+      beginner: "Cơ bản",
+      intermediate: "Trung cấp",
+      advanced: "Nâng cao",
+      editDayTask: "Sửa việc trong ngày",
+      editDayTaskHint: "Tùy chỉnh chính xác ngày này học/làm gì.",
+      whatToDo: "Ngày đó cần làm gì",
+      lessonLinkNote: "Link bài học / ghi chú",
+      lessonLink: "Link bài học",
+      lessonLinkHint:
+        "Ví dụ: ngày 1 học 20 từ, ngày 2 học 50 từ; mỗi ngày có thể có link riêng.",
+      cancel: "Hủy",
+      saving: "Đang lưu...",
+      saveDayTask: "Lưu việc trong ngày",
+      demoMode: "Chế độ demo: thêm Supabase env để lưu mục tiêu.",
+      noGoals: "Chưa có mục tiêu",
+      noGoalsHint:
+        "Tạo một mục tiêu, LifeOS sẽ chia thành việc hằng ngày. Mục tiêu học tập có thể tự tạo Kỹ năng liên kết.",
+      createFirstGoal: "Tạo mục tiêu đầu tiên",
+      taskMarked: "Đã cập nhật task. Timeline đã đồng bộ.",
+      deleteConfirm:
+        "Xóa mục tiêu này, lộ trình ngày, kỹ năng liên kết và các block Timeline đã đồng bộ?",
+      goalDeleted:
+        "Đã xóa mục tiêu. Kỹ năng liên kết và block Timeline đồng bộ cũng đã được xóa.",
+      goalCreated: "Đã tạo kế hoạch mục tiêu.",
+      dayTaskUpdated: "Đã cập nhật việc trong ngày. Timeline đã đồng bộ.",
+      goalProgressSaved: "Đã lưu tiến độ mục tiêu.",
+      howItLinks: "Cách liên kết",
+      linkFlow: "Mục tiêu -> Việc ngày -> Kỹ năng -> Timeline",
+      linkHint:
+        "Tick việc trong Goal thì block Timeline tương ứng cũng cập nhật. Goal học tập sẽ tạo thêm task luyện kỹ năng.",
+    },
+    lifeScore: {
+      title: "Điểm sống",
+      status: "Ổn áp",
+      message: "Tiếp tục nha",
+    },
+    lifeLevel: {
+      title: "Cấp độ cuộc sống",
+      level: "Cấp",
+      next: "Lên cấp sau",
+      days: "ngày",
+      setup: "Thêm ngày sinh để mở khóa XP mỗi ngày",
+    },
+    nav: {
+      dashboard: "Tổng quan",
+      timeline: "Lịch ngày",
+      workout: "Tập luyện",
+      activities: "Hoạt động",
+      nutrition: "Dinh dưỡng",
+      weight: "Cân nặng",
+      goals: "Mục tiêu",
+      skills: "Kỹ năng",
+      finance: "Tài chính",
+      journal: "Nhật ký",
+      ai: "Trợ lý AI",
+      settings: "Cài đặt",
+      profile: "Hồ sơ",
+      logout: "Đăng xuất",
+      addTask: "Thêm task mới",
+      notifications: "Thông báo",
+      menu: "Menu",
+      allModules: "Tất cả chức năng",
+    },
+  },
+} as const;
+
+type Dictionary = typeof dictionaries.en;
+
+export type TranslationKey = {
+  [Section in keyof Dictionary]: {
+    [Key in keyof Dictionary[Section]]: `${Section}.${Extract<Key, string>}`;
+  }[keyof Dictionary[Section]];
+}[keyof Dictionary];
+
+export function isLocale(value: string | null | undefined): value is Locale {
+  return locales.includes(value as Locale);
+}
