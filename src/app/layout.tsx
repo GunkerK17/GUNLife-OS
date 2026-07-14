@@ -20,9 +20,9 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: {
     default: "GunLifeOS",
-    template: "%s · GunLifeOS",
+    template: "%s | GunLifeOS",
   },
-  description: "Personal life operating system",
+  description: "GunLifeOS - personal life operating system",
   applicationName: "GunLifeOS",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
@@ -31,8 +31,23 @@ export const metadata: Metadata = {
     title: "GunLifeOS",
   },
   icons: {
-    icon: "/icons/lifeos.svg",
-    apple: "/icons/lifeos.svg",
+    icon: [
+      {
+        url: "/icons/lifeos.svg",
+        type: "image/svg+xml",
+      },
+    ],
+    shortcut: "/icons/lifeos.svg",
+    apple: [
+      {
+        url: "/brand/gunlifeos-brand.png",
+        sizes: "1254x1254",
+        type: "image/png",
+      },
+    ],
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
   },
 };
 
