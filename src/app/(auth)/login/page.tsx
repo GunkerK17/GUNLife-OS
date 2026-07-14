@@ -298,35 +298,38 @@ function HeroPanel() {
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(0deg,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:52px_52px]" />
       <div className="absolute inset-x-0 bottom-0 h-72 bg-[linear-gradient(0deg,rgba(34,197,94,0.22),transparent)]" />
       <div className="absolute left-[42%] top-20 h-[520px] w-px rotate-[20deg] bg-[linear-gradient(180deg,transparent,#22d3ee,#22c55e,transparent)] opacity-60" />
-      <div className="absolute right-12 top-24 w-72 rounded-xl border border-cyan-300/20 bg-slate-950/65 p-5 font-mono text-xs leading-7 text-cyan-200/85 shadow-[0_0_60px_rgba(34,211,238,0.12)]">
-        <p className="text-emerald-300">function improve() {"{"}</p>
-        <p className="pl-4">discipline();</p>
-        <p className="pl-4">focus();</p>
-        <p className="pl-4">consistency();</p>
-        <p className="text-emerald-300">{"}"}</p>
-      </div>
 
       <div className="relative z-10">
         <BrandMark />
       </div>
 
-      <div className="relative z-10 mt-auto max-w-xl pb-6">
-        <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-300/25 bg-emerald-300/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.24em] text-emerald-200">
-          <BadgeCheck className="size-3.5" />
-          {text.commandLayer}
+      <div className="relative z-10 mt-auto grid items-start gap-6 pb-6 2xl:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="min-w-0 max-w-[34rem]">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-300/25 bg-emerald-300/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.24em] text-emerald-200">
+            <BadgeCheck className="size-3.5" />
+            {text.commandLayer}
+          </div>
+          <h1 className="text-balance text-5xl font-black leading-[0.96] tracking-tight text-white">
+            {text.headline1}
+            <br />
+            {text.headline2}
+            <br />
+            <span className="bg-[linear-gradient(90deg,#22d3ee,#4ade80)] bg-clip-text text-transparent">
+              {text.headline3}
+            </span>
+          </h1>
+          <p className="mt-6 max-w-lg text-base leading-8 text-slate-300">
+            {text.hero}
+          </p>
         </div>
-        <h1 className="text-balance text-5xl font-black leading-[0.96] tracking-tight text-white xl:text-6xl">
-          {text.headline1}
-          <br />
-          {text.headline2}
-          <br />
-          <span className="bg-[linear-gradient(90deg,#22d3ee,#4ade80)] bg-clip-text text-transparent">
-            {text.headline3}
-          </span>
-        </h1>
-        <p className="mt-6 max-w-lg text-base leading-8 text-slate-300">
-          {text.hero}
-        </p>
+
+        <div className="hidden w-full rounded-xl border border-cyan-300/20 bg-slate-950/65 p-5 font-mono text-xs leading-7 text-cyan-200/85 shadow-[0_0_60px_rgba(34,211,238,0.12)] 2xl:block">
+          <p className="text-emerald-300">function improve() {"{"}</p>
+          <p className="pl-4">discipline();</p>
+          <p className="pl-4">focus();</p>
+          <p className="pl-4">consistency();</p>
+          <p className="text-emerald-300">{"}"}</p>
+        </div>
       </div>
 
       <div className="relative z-10 mt-6 grid grid-cols-3 gap-4">
