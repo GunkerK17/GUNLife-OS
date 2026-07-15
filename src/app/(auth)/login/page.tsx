@@ -152,7 +152,7 @@ function LoginCard() {
   const message = searchParams.get("message") ?? undefined;
 
   return (
-    <Card className="relative w-full overflow-hidden rounded-xl border-white/15 bg-slate-950/78 text-white shadow-[0_30px_90px_rgba(0,0,0,0.6),0_0_0_1px_rgba(34,211,238,0.14)] backdrop-blur-2xl">
+    <Card className="lifeos-card-enter relative w-full overflow-hidden rounded-xl border-white/15 bg-slate-950/78 text-white shadow-[0_30px_90px_rgba(0,0,0,0.6),0_0_0_1px_rgba(34,211,238,0.14)] backdrop-blur-2xl">
       <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-[linear-gradient(90deg,transparent,#67e8f9,#86efac,transparent)]" />
       <CardHeader className="items-center space-y-3 px-5 pb-3 pt-6 text-center sm:px-8">
         <div className="grid size-14 place-items-center rounded-full border border-cyan-300/45 bg-cyan-300/10 text-cyan-100 shadow-[0_0_38px_rgba(34,211,238,0.34)]">
@@ -294,7 +294,7 @@ function HeroPanel() {
   const text = loginCopy[locale];
 
   return (
-    <section className="relative hidden min-h-[680px] overflow-hidden rounded-xl border border-white/10 bg-slate-950/70 p-8 shadow-[0_30px_100px_rgba(0,0,0,0.45)] lg:flex lg:flex-col 2xl:min-h-[720px]">
+    <section className="lifeos-page-enter relative hidden min-h-[680px] overflow-hidden rounded-xl border border-white/10 bg-slate-950/70 p-8 shadow-[0_30px_100px_rgba(0,0,0,0.45)] lg:flex lg:flex-col 2xl:min-h-[720px]">
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(0deg,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:52px_52px]" />
       <div className="absolute inset-x-0 bottom-0 h-72 bg-[linear-gradient(0deg,rgba(34,197,94,0.22),transparent)]" />
       <div className="absolute left-[42%] top-20 h-[520px] w-px rotate-[20deg] bg-[linear-gradient(180deg,transparent,#22d3ee,#22c55e,transparent)] opacity-60" />
@@ -414,7 +414,7 @@ function LoginScreen() {
 
   return (
     <main className="fixed inset-0 z-50 min-h-svh overflow-y-auto overflow-x-hidden bg-[#02050b] text-white">
-      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(115deg,rgba(34,211,238,0.16),transparent_34%),linear-gradient(245deg,rgba(34,197,94,0.14),transparent_36%),linear-gradient(180deg,#050914_0%,#02050b_55%,#010308_100%)]" />
+      <div className="lifeos-ambient pointer-events-none fixed inset-0 bg-[linear-gradient(115deg,rgba(34,211,238,0.16),transparent_34%),linear-gradient(245deg,rgba(34,197,94,0.14),transparent_36%),linear-gradient(180deg,#050914_0%,#02050b_55%,#010308_100%)]" />
       <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(0deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:72px_72px] opacity-60" />
 
       <div className="relative mx-auto grid min-h-svh w-full max-w-[1440px] items-center gap-6 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(380px,460px)] lg:px-8 xl:gap-8">

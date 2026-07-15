@@ -452,7 +452,7 @@ export function DashboardChrome({
       <Sidebar user={user} />
 
       <div className="relative min-h-screen lg:pl-[216px] xl:pl-[232px] 2xl:pl-[244px]">
-        <main className="min-w-0 w-full max-w-full overflow-x-hidden px-3 pb-24 pt-3 sm:px-4 lg:px-4 lg:pb-6 lg:pt-3 xl:px-5 2xl:px-7">
+        <main className="lifeos-page-enter min-w-0 w-full max-w-full overflow-x-hidden px-3 pb-24 pt-3 sm:px-4 lg:px-4 lg:pb-6 lg:pt-3 xl:px-5 2xl:px-7">
           <MobileTopBar user={user} />
           <DesktopAccountBar user={user} />
           {!supabaseConfigured ? (

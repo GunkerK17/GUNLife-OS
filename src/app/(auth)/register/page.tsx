@@ -61,10 +61,10 @@ export default function RegisterPage({ searchParams }: RegisterPageProps) {
 
   return (
     <main className="dark relative grid min-h-svh overflow-x-hidden bg-[#02050b] px-3 py-4 text-white sm:px-6 sm:py-8">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,rgba(34,211,238,0.16),transparent_32%),radial-gradient(circle_at_85%_80%,rgba(34,197,94,0.18),transparent_35%),linear-gradient(180deg,#06101d_0%,#02050b_58%,#010308_100%)]" />
+      <div className="lifeos-ambient pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,rgba(34,211,238,0.16),transparent_32%),radial-gradient(circle_at_85%_80%,rgba(34,197,94,0.18),transparent_35%),linear-gradient(180deg,#06101d_0%,#02050b_58%,#010308_100%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(0deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:58px_58px]" />
 
-      <Card className="relative m-auto w-full max-w-md overflow-hidden rounded-2xl border-emerald-300/20 bg-slate-950/80 text-white shadow-[0_30px_100px_rgba(0,0,0,0.58),0_0_70px_rgba(34,197,94,0.1)] backdrop-blur-2xl">
+      <Card className="lifeos-card-enter relative m-auto w-full max-w-md overflow-hidden rounded-2xl border-emerald-300/20 bg-slate-950/80 text-white shadow-[0_30px_100px_rgba(0,0,0,0.58),0_0_70px_rgba(34,197,94,0.1)] backdrop-blur-2xl">
         <div className="h-px bg-[linear-gradient(90deg,transparent,#22d3ee,#22c55e,transparent)]" />
         <CardHeader className="space-y-5 px-4 pb-5 pt-5 sm:px-6 sm:pt-6">
           <div className="flex min-w-0 items-center justify-between gap-3">
