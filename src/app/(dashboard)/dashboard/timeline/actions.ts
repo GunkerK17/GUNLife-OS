@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { TIMELINE_WORKOUT_LOG_NOTE } from "@/lib/workout-timeline";
 import type {
   TaskStatus,
   TimelineCategory,
@@ -346,13 +347,56 @@ export async function setTimelineLogStatus(
   logId: string,
   status: TaskStatus,
 ): Promise<ActionResult<{ log: TimelineLogRow }>> {
-  if (!statuses.includes(status)) {
+  if (!z.string().uuid().safeParse(logId).success || !statuses.includes(status)) {
     return { ok: false, error: "Invalid status." };
   }
 
   const auth = await getAuthedSupabase();
   if (!auth.ok) {
     return { ok: false, error: auth.error };
+  }
+
+  const { data: currentLog, error: currentLogError } = await auth.supabase
+    .from("timeline_logs")
+    .select("*")
+    .eq("id", logId)
+    .eq("user_id", auth.user.id)
+    .maybeSingle();
+
+  if (currentLogError || !currentLog) {
+    return {
+      ok: false,
+      error: currentLogError?.message ?? "Timeline block not found.",
+    };
+  }
+
+  if (
+    status !== "done" &&
+    currentLog.source_type === "workout_plan" &&
+    currentLog.source_id
+  ) {
+    const { data: workoutLogs, error: workoutLogsError } = await auth.supabase
+      .from("workout_logs")
+      .select("note")
+      .eq("user_id", auth.user.id)
+      .eq("plan_id", currentLog.source_id)
+      .eq("log_date", currentLog.log_date);
+
+    if (workoutLogsError) {
+      return { ok: false, error: workoutLogsError.message };
+    }
+
+    if (
+      (workoutLogs ?? []).some(
+        (workoutLog) => workoutLog.note !== TIMELINE_WORKOUT_LOG_NOTE,
+      )
+    ) {
+      return {
+        ok: false,
+        error:
+          "Workout is already logged. Delete its Workout log before changing this Timeline block.",
+      };
+    }
   }
 
   const { data, error } = await auth.supabase
@@ -386,7 +430,71 @@ export async function setTimelineLogStatus(
       .eq("user_id", auth.user.id);
   }
 
+  if (data.source_type === "workout_plan" && data.source_id) {
+    if (status === "done") {
+      const { data: existingWorkoutLog } = await auth.supabase
+        .from("workout_logs")
+        .select("id")
+        .eq("user_id", auth.user.id)
+        .eq("plan_id", data.source_id)
+        .eq("log_date", data.log_date)
+        .limit(1)
+        .maybeSingle();
+
+      if (!existingWorkoutLog) {
+        const { error: workoutLogError } = await auth.supabase
+          .from("workout_logs")
+          .insert({
+          user_id: auth.user.id,
+          plan_id: data.source_id,
+          log_date: data.log_date,
+          duration_min: data.duration_min,
+          calories_burned: null,
+          avg_heart_rate: null,
+          max_heart_rate: null,
+          note: TIMELINE_WORKOUT_LOG_NOTE,
+          image_url: null,
+        });
+
+        if (workoutLogError) {
+          await auth.supabase
+            .from("timeline_logs")
+            .update({
+              status: currentLog.status,
+              completed_at: currentLog.completed_at,
+            })
+            .eq("id", currentLog.id)
+            .eq("user_id", auth.user.id);
+
+          return { ok: false, error: workoutLogError.message };
+        }
+      }
+    } else {
+      const { error: workoutDeleteError } = await auth.supabase
+        .from("workout_logs")
+        .delete()
+        .eq("user_id", auth.user.id)
+        .eq("plan_id", data.source_id)
+        .eq("log_date", data.log_date)
+        .eq("note", TIMELINE_WORKOUT_LOG_NOTE);
+
+      if (workoutDeleteError) {
+        await auth.supabase
+          .from("timeline_logs")
+          .update({
+            status: currentLog.status,
+            completed_at: currentLog.completed_at,
+          })
+          .eq("id", currentLog.id)
+          .eq("user_id", auth.user.id);
+
+        return { ok: false, error: workoutDeleteError.message };
+      }
+    }
+  }
+
   revalidatePath("/dashboard/timeline");
+  revalidatePath("/dashboard/workout");
   revalidatePath("/dashboard/goals");
   revalidatePath("/dashboard/skills");
   revalidatePath("/dashboard");
@@ -470,6 +578,13 @@ export async function createTimelineBlock(
     .single();
 
   if (error || !data) {
+    if (template) {
+      await auth.supabase
+        .from("timeline_templates")
+        .delete()
+        .eq("id", template.id)
+        .eq("user_id", auth.user.id);
+    }
     return { ok: false, error: error?.message ?? "Could not create block." };
   }
 

@@ -266,19 +266,28 @@ async function generateTimelineLogsForDate(userId: string, dateString: string) {
       .map((skill) => skill.id),
   );
 
-  const goalLogs: TimelineInsert[] = goalTasks.map((task, index) => ({
-    user_id: userId,
-    template_id: null,
-    source_type: "goal_daily_task",
-    source_id: task.id,
-    log_date: dateString,
-    title: task.description,
-    category: goalTimelineCategory(goalCategoryById.get(task.goal_id)),
-    start_time: timeAt(14 + Math.floor(index / 2), index % 2 === 0 ? 0 : 30),
-    duration_min: 45,
-    status: task.status,
-    note: "Goal daily task",
-  }));
+  const linkedLearningGoalIds = new Set(
+    skills
+      .filter((skill) => validSkillIds.has(skill.id))
+      .map((skill) => linkedGoalId(skill.description))
+      .filter((goalId): goalId is string => Boolean(goalId)),
+  );
+
+  const goalLogs: TimelineInsert[] = goalTasks
+    .filter((task) => !linkedLearningGoalIds.has(task.goal_id))
+    .map((task, index) => ({
+      user_id: userId,
+      template_id: null,
+      source_type: "goal_daily_task",
+      source_id: task.id,
+      log_date: dateString,
+      title: task.description,
+      category: goalTimelineCategory(goalCategoryById.get(task.goal_id)),
+      start_time: timeAt(14 + Math.floor(index / 2), index % 2 === 0 ? 0 : 30),
+      duration_min: 45,
+      status: task.status,
+      note: "Goal daily task",
+    }));
 
   const skillLogs: TimelineInsert[] = skillTasks
     .filter((task) => validSkillIds.has(task.skill_id))

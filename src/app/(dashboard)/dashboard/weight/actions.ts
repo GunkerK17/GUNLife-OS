@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { publicStoragePath } from "@/lib/supabase/storage-url";
 import type {
   BodyMeasurementRow,
   WeightLogRow,
@@ -140,6 +141,17 @@ async function uploadWeightImage({
   return { ok: true, data: { imageUrl: data.publicUrl } };
 }
 
+async function removeWeightImage(
+  imageUrl: string | null | undefined,
+  supabase: ReturnType<typeof createSupabaseServerClient>,
+) {
+  const path = publicStoragePath(imageUrl, weightImageBucket);
+
+  if (path) {
+    await supabase.storage.from(weightImageBucket).remove([path]);
+  }
+}
+
 async function getAuthedSupabase() {
   if (!hasSupabaseConfig()) {
     return { ok: false, error: "Supabase is not configured yet." } as const;
@@ -216,6 +228,13 @@ export async function createWeightLog(
     return { ok: false, error: auth.error };
   }
 
+  const { data: existingLog } = await auth.supabase
+    .from("weight_logs")
+    .select("image_url")
+    .eq("user_id", auth.user.id)
+    .eq("log_date", parsed.data.log_date)
+    .maybeSingle();
+
   const imageUpload = await uploadWeightImage({
     file: getWeightImage(formData),
     logDate: parsed.data.log_date,
@@ -246,7 +265,12 @@ export async function createWeightLog(
     .single();
 
   if (error || !data) {
+    await removeWeightImage(imageUpload.data.imageUrl, auth.supabase);
     return { ok: false, error: error?.message ?? "Could not save body check." };
+  }
+
+  if (imageUpload.data.imageUrl) {
+    await removeWeightImage(existingLog?.image_url, auth.supabase);
   }
 
   revalidateWeight();
@@ -299,7 +323,12 @@ export async function updateWeightLog(
     .single();
 
   if (error || !data) {
+    await removeWeightImage(imageUpload.data.imageUrl, auth.supabase);
     return { ok: false, error: error?.message ?? "Could not update body check." };
+  }
+
+  if (imageUpload.data.imageUrl) {
+    await removeWeightImage(parsed.data.image_url, auth.supabase);
   }
 
   revalidateWeight();
@@ -319,6 +348,17 @@ export async function deleteWeightLog(
     return { ok: false, error: auth.error };
   }
 
+  const { data: existingLog, error: findError } = await auth.supabase
+    .from("weight_logs")
+    .select("image_url")
+    .eq("id", logId)
+    .eq("user_id", auth.user.id)
+    .maybeSingle();
+
+  if (findError || !existingLog) {
+    return { ok: false, error: findError?.message ?? "Body check not found." };
+  }
+
   const { error } = await auth.supabase
     .from("weight_logs")
     .delete()
@@ -328,6 +368,8 @@ export async function deleteWeightLog(
   if (error) {
     return { ok: false, error: error.message };
   }
+
+  await removeWeightImage(existingLog.image_url, auth.supabase);
 
   revalidateWeight();
 
@@ -346,6 +388,17 @@ export async function removeWeightPhoto(
     return { ok: false, error: auth.error };
   }
 
+  const { data: existingLog, error: findError } = await auth.supabase
+    .from("weight_logs")
+    .select("image_url")
+    .eq("id", logId)
+    .eq("user_id", auth.user.id)
+    .maybeSingle();
+
+  if (findError || !existingLog) {
+    return { ok: false, error: findError?.message ?? "Body check not found." };
+  }
+
   const { data, error } = await auth.supabase
     .from("weight_logs")
     .update({ image_url: null })
@@ -357,6 +410,8 @@ export async function removeWeightPhoto(
   if (error || !data) {
     return { ok: false, error: error?.message ?? "Could not remove photo." };
   }
+
+  await removeWeightImage(existingLog.image_url, auth.supabase);
 
   revalidateWeight();
 
@@ -406,6 +461,7 @@ export async function createBodyMeasurement(
     .single();
 
   if (error || !data) {
+    await removeWeightImage(imageUpload.data.imageUrl, auth.supabase);
     return { ok: false, error: error?.message ?? "Could not save body scan." };
   }
 
@@ -461,7 +517,12 @@ export async function updateBodyMeasurement(
     .single();
 
   if (error || !data) {
+    await removeWeightImage(imageUpload.data.imageUrl, auth.supabase);
     return { ok: false, error: error?.message ?? "Could not update body scan." };
+  }
+
+  if (imageUpload.data.imageUrl) {
+    await removeWeightImage(parsed.data.image_url, auth.supabase);
   }
 
   revalidateWeight();
@@ -481,6 +542,20 @@ export async function deleteBodyMeasurement(
     return { ok: false, error: auth.error };
   }
 
+  const { data: existingMeasurement, error: findError } = await auth.supabase
+    .from("body_measurements")
+    .select("image_url")
+    .eq("id", measurementId)
+    .eq("user_id", auth.user.id)
+    .maybeSingle();
+
+  if (findError || !existingMeasurement) {
+    return {
+      ok: false,
+      error: findError?.message ?? "Body measurement not found.",
+    };
+  }
+
   const { error } = await auth.supabase
     .from("body_measurements")
     .delete()
@@ -490,6 +565,8 @@ export async function deleteBodyMeasurement(
   if (error) {
     return { ok: false, error: error.message };
   }
+
+  await removeWeightImage(existingMeasurement.image_url, auth.supabase);
 
   revalidateWeight();
 

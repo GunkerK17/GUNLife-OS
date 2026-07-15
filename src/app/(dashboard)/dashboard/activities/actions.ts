@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { publicStoragePath } from "@/lib/supabase/storage-url";
 import type {
   ActivityRow,
   ActivityType,
@@ -134,6 +135,17 @@ async function uploadActivityImage({
   return { ok: true, data: { imageUrl: data.publicUrl } };
 }
 
+async function removeActivityImage(
+  imageUrl: string | null | undefined,
+  supabase: ReturnType<typeof createSupabaseServerClient>,
+) {
+  const path = publicStoragePath(imageUrl, activityImageBucket);
+
+  if (path) {
+    await supabase.storage.from(activityImageBucket).remove([path]);
+  }
+}
+
 const activitySchema = z.object({
   id: z.string().uuid().optional(),
   log_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -233,6 +245,7 @@ export async function createActivityLog(
     .single();
 
   if (error || !data) {
+    await removeActivityImage(imageUpload.data.imageUrl, auth.supabase);
     return { ok: false, error: error?.message ?? "Could not log activity." };
   }
 
@@ -288,7 +301,12 @@ export async function updateActivityLog(
     .single();
 
   if (error || !data) {
+    await removeActivityImage(imageUpload.data.imageUrl, auth.supabase);
     return { ok: false, error: error?.message ?? "Could not update activity." };
+  }
+
+  if (imageUpload.data.imageUrl) {
+    await removeActivityImage(parsed.data.image_url, auth.supabase);
   }
 
   revalidateActivities();
@@ -308,6 +326,17 @@ export async function deleteActivityLog(
     return { ok: false, error: auth.error };
   }
 
+  const { data: existingLog, error: findError } = await auth.supabase
+    .from("activities")
+    .select("image_url")
+    .eq("id", activityId)
+    .eq("user_id", auth.user.id)
+    .maybeSingle();
+
+  if (findError || !existingLog) {
+    return { ok: false, error: findError?.message ?? "Activity not found." };
+  }
+
   const { error } = await auth.supabase
     .from("activities")
     .delete()
@@ -317,6 +346,8 @@ export async function deleteActivityLog(
   if (error) {
     return { ok: false, error: error.message };
   }
+
+  await removeActivityImage(existingLog.image_url, auth.supabase);
 
   revalidateActivities();
 
@@ -335,6 +366,17 @@ export async function removeActivityPhoto(
     return { ok: false, error: auth.error };
   }
 
+  const { data: existingLog, error: findError } = await auth.supabase
+    .from("activities")
+    .select("image_url")
+    .eq("id", activityId)
+    .eq("user_id", auth.user.id)
+    .maybeSingle();
+
+  if (findError || !existingLog) {
+    return { ok: false, error: findError?.message ?? "Activity not found." };
+  }
+
   const { data, error } = await auth.supabase
     .from("activities")
     .update({ image_url: null })
@@ -346,6 +388,8 @@ export async function removeActivityPhoto(
   if (error || !data) {
     return { ok: false, error: error?.message ?? "Could not remove photo." };
   }
+
+  await removeActivityImage(existingLog.image_url, auth.supabase);
 
   revalidateActivities();
 

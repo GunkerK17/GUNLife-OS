@@ -408,6 +408,11 @@ export async function createGoalPlan(
       .insert(goalTasks);
 
     if (taskError) {
+      await auth.supabase
+        .from("goals")
+        .delete()
+        .eq("id", goal.id)
+        .eq("user_id", auth.user.id);
       return { ok: false, error: taskError.message };
     }
   }
@@ -435,6 +440,11 @@ export async function createGoalPlan(
       .single();
 
     if (skillError || !createdSkill) {
+      await auth.supabase
+        .from("goals")
+        .delete()
+        .eq("id", goal.id)
+        .eq("user_id", auth.user.id);
       return { ok: false, error: skillError?.message ?? "Could not create skill." };
     }
 
@@ -455,6 +465,16 @@ export async function createGoalPlan(
       .insert(skillTasks);
 
     if (skillTaskError) {
+      await auth.supabase
+        .from("skills")
+        .delete()
+        .eq("id", createdSkill.id)
+        .eq("user_id", auth.user.id);
+      await auth.supabase
+        .from("goals")
+        .delete()
+        .eq("id", goal.id)
+        .eq("user_id", auth.user.id);
       return { ok: false, error: skillTaskError.message };
     }
   }

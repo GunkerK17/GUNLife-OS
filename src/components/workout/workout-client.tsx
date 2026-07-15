@@ -60,6 +60,7 @@ import type {
   WorkoutLogRow,
 } from "@/lib/supabase/database.types";
 import { cn } from "@/lib/utils";
+import { isTimelineWorkoutLog } from "@/lib/workout-timeline";
 
 type WorkoutClientProps = {
   selectedDate: string;
@@ -1706,7 +1707,7 @@ export function WorkoutClient({
                         <Trash2 className="size-3" />
                       </Button>
                     </div>
-                    {log.note ? (
+                    {log.note && !isTimelineWorkoutLog(log.note) ? (
                       <p className="mt-2 text-sm leading-5 text-slate-300">
                         {log.note}
                       </p>

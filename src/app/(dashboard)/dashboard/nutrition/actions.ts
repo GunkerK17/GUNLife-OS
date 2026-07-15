@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { publicStoragePath } from "@/lib/supabase/storage-url";
 import type { MealType, NutritionLogRow } from "@/lib/supabase/database.types";
 
 export type ActionResult<T> =
@@ -142,6 +143,17 @@ async function uploadNutritionImage({
   return { ok: true, data: { imageUrl: data.publicUrl } };
 }
 
+async function removeNutritionImage(
+  imageUrl: string | null | undefined,
+  supabase: ReturnType<typeof createSupabaseServerClient>,
+) {
+  const path = publicStoragePath(imageUrl, nutritionImageBucket);
+
+  if (path) {
+    await supabase.storage.from(nutritionImageBucket).remove([path]);
+  }
+}
+
 async function getAuthedSupabase() {
   if (!hasSupabaseConfig()) {
     return { ok: false, error: "Supabase is not configured yet." } as const;
@@ -232,6 +244,7 @@ export async function createNutritionLog(
     .single();
 
   if (error || !data) {
+    await removeNutritionImage(imageUpload.data.imageUrl, auth.supabase);
     return { ok: false, error: error?.message ?? "Could not log meal." };
   }
 
@@ -289,7 +302,12 @@ export async function updateNutritionLog(
     .single();
 
   if (error || !data) {
+    await removeNutritionImage(imageUpload.data.imageUrl, auth.supabase);
     return { ok: false, error: error?.message ?? "Could not update meal." };
+  }
+
+  if (imageUpload.data.imageUrl) {
+    await removeNutritionImage(parsed.data.image_url, auth.supabase);
   }
 
   revalidateNutrition();
@@ -309,6 +327,17 @@ export async function deleteNutritionLog(
     return { ok: false, error: auth.error };
   }
 
+  const { data: existingLog, error: findError } = await auth.supabase
+    .from("nutrition_logs")
+    .select("image_url")
+    .eq("id", logId)
+    .eq("user_id", auth.user.id)
+    .maybeSingle();
+
+  if (findError || !existingLog) {
+    return { ok: false, error: findError?.message ?? "Meal not found." };
+  }
+
   const { error } = await auth.supabase
     .from("nutrition_logs")
     .delete()
@@ -318,6 +347,8 @@ export async function deleteNutritionLog(
   if (error) {
     return { ok: false, error: error.message };
   }
+
+  await removeNutritionImage(existingLog.image_url, auth.supabase);
 
   revalidateNutrition();
 
@@ -336,6 +367,17 @@ export async function removeNutritionPhoto(
     return { ok: false, error: auth.error };
   }
 
+  const { data: existingLog, error: findError } = await auth.supabase
+    .from("nutrition_logs")
+    .select("image_url")
+    .eq("id", logId)
+    .eq("user_id", auth.user.id)
+    .maybeSingle();
+
+  if (findError || !existingLog) {
+    return { ok: false, error: findError?.message ?? "Meal not found." };
+  }
+
   const { data, error } = await auth.supabase
     .from("nutrition_logs")
     .update({ image_url: null })
@@ -347,6 +389,8 @@ export async function removeNutritionPhoto(
   if (error || !data) {
     return { ok: false, error: error?.message ?? "Could not remove photo." };
   }
+
+  await removeNutritionImage(existingLog.image_url, auth.supabase);
 
   revalidateNutrition();
 

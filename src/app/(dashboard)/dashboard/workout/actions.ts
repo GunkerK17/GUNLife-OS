@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { TIMELINE_WORKOUT_LOG_NOTE } from "@/lib/workout-timeline";
 import type {
   WorkoutExerciseRow,
   WorkoutLogRow,
@@ -170,9 +171,9 @@ async function uploadWorkoutImage({
   logDate: string;
   supabase: ReturnType<typeof createSupabaseServerClient>;
   userId: string;
-}): Promise<ActionResult<{ imageUrl: string | null }>> {
+}): Promise<ActionResult<{ imageUrl: string | null; storagePath: string | null }>> {
   if (!file) {
-    return { ok: true, data: { imageUrl: null } };
+    return { ok: true, data: { imageUrl: null, storagePath: null } };
   }
 
   if (!workoutImageTypes.includes(file.type)) {
@@ -208,7 +209,36 @@ async function uploadWorkoutImage({
 
   const { data } = supabase.storage.from(workoutImageBucket).getPublicUrl(path);
 
-  return { ok: true, data: { imageUrl: data.publicUrl } };
+  return { ok: true, data: { imageUrl: data.publicUrl, storagePath: path } };
+}
+
+function workoutStoragePath(imageUrl: string | null | undefined) {
+  if (!imageUrl) {
+    return null;
+  }
+
+  try {
+    const url = new URL(imageUrl);
+    const marker = `/storage/v1/object/public/${workoutImageBucket}/`;
+    const markerIndex = url.pathname.indexOf(marker);
+
+    return markerIndex >= 0
+      ? decodeURIComponent(url.pathname.slice(markerIndex + marker.length))
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+async function removeWorkoutImage(
+  imageUrl: string | null | undefined,
+  supabase: ReturnType<typeof createSupabaseServerClient>,
+) {
+  const path = workoutStoragePath(imageUrl);
+
+  if (path) {
+    await supabase.storage.from(workoutImageBucket).remove([path]);
+  }
 }
 
 async function markWorkoutTimelineDone({
@@ -587,23 +617,44 @@ export async function createWorkoutLog(
     return { ok: false, error: imageResult.error };
   }
 
-  const { data, error } = await auth.supabase
-    .from("workout_logs")
-    .insert({
-      user_id: auth.user.id,
-      plan_id: parsed.data.plan_id ?? null,
-      log_date: parsed.data.log_date,
-      duration_min: parsed.data.duration_min ?? null,
-      calories_burned: parsed.data.calories_burned ?? null,
-      avg_heart_rate: parsed.data.avg_heart_rate ?? null,
-      max_heart_rate: parsed.data.max_heart_rate ?? null,
-      note: parsed.data.note ?? null,
-      image_url: imageResult.data.imageUrl,
-    })
-    .select("*")
-    .single();
+  const { data: timelineWorkoutLog } = parsed.data.plan_id
+    ? await auth.supabase
+        .from("workout_logs")
+        .select("id")
+        .eq("user_id", auth.user.id)
+        .eq("plan_id", parsed.data.plan_id)
+        .eq("log_date", parsed.data.log_date)
+        .eq("note", TIMELINE_WORKOUT_LOG_NOTE)
+        .limit(1)
+        .maybeSingle()
+    : { data: null };
+
+  const workoutPayload = {
+    user_id: auth.user.id,
+    plan_id: parsed.data.plan_id ?? null,
+    log_date: parsed.data.log_date,
+    duration_min: parsed.data.duration_min ?? null,
+    calories_burned: parsed.data.calories_burned ?? null,
+    avg_heart_rate: parsed.data.avg_heart_rate ?? null,
+    max_heart_rate: parsed.data.max_heart_rate ?? null,
+    note: parsed.data.note ?? null,
+    image_url: imageResult.data.imageUrl,
+  };
+  const query = timelineWorkoutLog
+    ? auth.supabase
+        .from("workout_logs")
+        .update(workoutPayload)
+        .eq("id", timelineWorkoutLog.id)
+        .eq("user_id", auth.user.id)
+    : auth.supabase.from("workout_logs").insert(workoutPayload);
+  const { data, error } = await query.select("*").single();
 
   if (error || !data) {
+    if (imageResult.data.storagePath) {
+      await auth.supabase.storage
+        .from(workoutImageBucket)
+        .remove([imageResult.data.storagePath]);
+    }
     return { ok: false, error: error?.message ?? "Could not log workout." };
   }
 
@@ -634,6 +685,20 @@ export async function deleteWorkoutLog(
     return { ok: false, error: auth.error };
   }
 
+  const { data: existingLog, error: findError } = await auth.supabase
+    .from("workout_logs")
+    .select("id,plan_id,log_date,image_url")
+    .eq("id", logId)
+    .eq("user_id", auth.user.id)
+    .maybeSingle();
+
+  if (findError || !existingLog) {
+    return {
+      ok: false,
+      error: findError?.message ?? "Workout log not found.",
+    };
+  }
+
   const { error } = await auth.supabase
     .from("workout_logs")
     .delete()
@@ -642,6 +707,32 @@ export async function deleteWorkoutLog(
 
   if (error) {
     return { ok: false, error: error.message };
+  }
+
+  await removeWorkoutImage(existingLog.image_url, auth.supabase);
+
+  if (existingLog.plan_id) {
+    const { count: remainingLogs, error: remainingLogsError } = await auth.supabase
+      .from("workout_logs")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", auth.user.id)
+      .eq("plan_id", existingLog.plan_id)
+      .eq("log_date", existingLog.log_date);
+
+    if (!remainingLogsError && remainingLogs === 0) {
+      await auth.supabase
+        .from("timeline_logs")
+        .update({
+          status: "pending",
+          completed_at: null,
+          note: null,
+        })
+        .eq("user_id", auth.user.id)
+        .eq("log_date", existingLog.log_date)
+        .eq("source_type", "workout_plan")
+        .eq("source_id", existingLog.plan_id)
+        .eq("status", "done");
+    }
   }
 
   revalidateWorkout();
@@ -701,8 +792,15 @@ export async function addWorkoutLogPhoto(
     .single();
 
   if (error || !data) {
+    if (imageResult.data.storagePath) {
+      await auth.supabase.storage
+        .from(workoutImageBucket)
+        .remove([imageResult.data.storagePath]);
+    }
     return { ok: false, error: error?.message ?? "Could not add photo." };
   }
+
+  await removeWorkoutImage(existingLog.image_url, auth.supabase);
 
   revalidateWorkout();
 
