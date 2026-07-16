@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cookies } from "next/headers";
 import { AlertMessage } from "@/components/shared/alert-message";
+import { GeminiKeySettings } from "@/components/settings/gemini-key-settings";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -460,6 +461,11 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
           </div>
 
           <div className="space-y-4">
+            <GeminiKeySettings
+              serverKeyAvailable={Boolean(process.env.GEMINI_API_KEY?.trim())}
+              userId={authUser?.id ?? null}
+            />
+
             <SettingsSection title={text.workTitle} description={text.workDescription} icon={BriefcaseBusiness}>
               <div className="space-y-4">
                 <Field label={text.job}><Input name="jobTitle" defaultValue={profile?.job_title ?? ""} placeholder={text.jobPlaceholder} className={inputClassName} /></Field>

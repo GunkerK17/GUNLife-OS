@@ -9,12 +9,20 @@ import type {
 export const runtime = "nodejs";
 
 const requestSchema = z.object({
+  apiKey: z.string().trim().min(20).max(256).optional(),
   category: z
     .enum(["general", "daily", "health", "goals", "finance", "learning"])
     .optional(),
   conversationId: z.string().uuid().nullable().optional(),
   locale: z.enum(["vi", "en"]).default("vi"),
   message: z.string().trim().min(1).max(6000),
+  model: z
+    .string()
+    .trim()
+    .min(3)
+    .max(100)
+    .regex(/^[A-Za-z0-9._-]+$/)
+    .optional(),
 });
 
 function bangkokDate() {
@@ -51,6 +59,28 @@ function safeMessages(value: unknown): AiMessage[] {
   });
 }
 
+function geminiError(locale: "vi" | "en", status: number, fallback?: string) {
+  if (status === 429) {
+    return locale === "vi"
+      ? "Gemini key đã hết quota hoặc đang bị giới hạn. Hãy mở Cài đặt > Gemini AI để thay key, hoặc chờ quota reset."
+      : "The Gemini key is out of quota or rate limited. Replace it in Settings > Gemini AI, or wait for the quota to reset.";
+  }
+  if (status === 401 || status === 403) {
+    return locale === "vi"
+      ? "Gemini key không hợp lệ hoặc đã bị khóa. Hãy thay key trong Cài đặt > Gemini AI."
+      : "The Gemini key is invalid or blocked. Replace it in Settings > Gemini AI.";
+  }
+  if (status === 404) {
+    return locale === "vi"
+      ? "Không tìm thấy model Gemini đã chọn. Hãy kiểm tra model trong Cài đặt > Gemini AI."
+      : "The selected Gemini model was not found. Check it in Settings > Gemini AI.";
+  }
+  return fallback ||
+    (locale === "vi"
+      ? "Gemini API không phản hồi. Hãy thử lại sau."
+      : "Gemini API did not respond. Try again later.");
+}
+
 export async function POST(request: Request) {
   const parsed = requestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
@@ -60,13 +90,17 @@ export async function POST(request: Request) {
     );
   }
 
-  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  const apiKey = parsed.data.apiKey?.trim() || process.env.GEMINI_API_KEY?.trim();
   if (!apiKey) {
     return NextResponse.json(
-      { error: "GEMINI_API_KEY chưa được cấu hình trong .env.local." },
+      { error: "Chưa có Gemini API key. Hãy thêm key trong Cài đặt > Gemini AI." },
       { status: 503 },
     );
   }
+  const model =
+    parsed.data.model?.trim() ||
+    process.env.GEMINI_MODEL?.trim() ||
+    "gemini-3.5-flash";
 
   const supabase = createSupabaseServerClient();
   const {
@@ -134,32 +168,46 @@ export async function POST(request: Request) {
       ? `Bạn là LifeOS Coach, trợ lý cá nhân thực tế và ngắn gọn. Hãy trả lời bằng tiếng Việt. Dùng dữ liệu LifeOS được cung cấp để đưa ra nhận xét cụ thể, nhưng không bịa dữ liệu. Không chẩn đoán y khoa, không đưa ra cam kết tài chính. Nếu thiếu dữ liệu, nói rõ. Ưu tiên 3 việc: nhận ra mẫu, đề xuất bước tiếp theo nhỏ, và hỏi tối đa một câu khi thật sự cần. Dữ liệu hiện tại: ${JSON.stringify(context)}`
       : `You are LifeOS Coach, a practical and concise personal assistant. Use the provided LifeOS data without inventing facts. Do not diagnose medical conditions or make financial guarantees. If data is missing, say so. Prioritize pattern recognition, one small next step, and at most one necessary question. Current data: ${JSON.stringify(context)}`;
 
-  const geminiResponse = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_MODEL?.trim() || "gemini-3.5-flash"}:generateContent`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": apiKey,
-      },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemInstruction }] },
-        contents: [...history, userMessage].map((message) => ({
-          role: message.role === "assistant" ? "model" : "user",
-          parts: [{ text: message.content }],
-        })),
-        generationConfig: {
-          temperature: 0.55,
-          maxOutputTokens: 1200,
+  let geminiResponse: Response;
+  try {
+    geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
         },
-      }),
-    },
-  );
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemInstruction }] },
+          contents: [...history, userMessage].map((message) => ({
+            role: message.role === "assistant" ? "model" : "user",
+            parts: [{ text: message.content }],
+          })),
+          generationConfig: {
+            temperature: 0.55,
+            maxOutputTokens: 1200,
+          },
+        }),
+      },
+    );
+  } catch {
+    return NextResponse.json(
+      { error: geminiError(parsed.data.locale, 503) },
+      { status: 503 },
+    );
+  }
 
   const geminiData = await geminiResponse.json().catch(() => null);
   if (!geminiResponse.ok) {
     return NextResponse.json(
-      { error: geminiData?.error?.message ?? "Gemini API không phản hồi." },
+      {
+        error: geminiError(
+          parsed.data.locale,
+          geminiResponse.status,
+          geminiData?.error?.message,
+        ),
+      },
       { status: geminiResponse.status },
     );
   }

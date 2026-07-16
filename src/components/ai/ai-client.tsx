@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Bot,
@@ -25,6 +25,10 @@ import {
 } from "lucide-react";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { localizeActionError } from "@/lib/localize-action-error";
+import {
+  readGeminiBrowserCredentials,
+  type GeminiBrowserCredentials,
+} from "@/lib/gemini-browser-key";
 import { Button } from "@/components/ui/button";
 import type {
   AiConversation,
@@ -83,6 +87,7 @@ export function AiClient({
   aiReady,
   conversations: initialConversations,
   supabaseReady,
+  userId,
 }: AiPageData) {
   const router = useRouter();
   const { locale } = useI18n();
@@ -100,12 +105,20 @@ export function AiClient({
   const [pending, setPending] = useState(false);
   const [managing, setManaging] = useState(false);
   const [error, setError] = useState("");
+  const [browserCredentials, setBrowserCredentials] =
+    useState<GeminiBrowserCredentials | null>(null);
+  const [credentialsLoaded, setCredentialsLoaded] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editCategory, setEditCategory] =
     useState<AiConversationCategory>("general");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    setBrowserCredentials(readGeminiBrowserCredentials(userId));
+    setCredentialsLoaded(true);
+  }, [userId]);
 
   const activeConversation = useMemo(
     () => conversations.find((item) => item.id === activeId) ?? null,
@@ -147,7 +160,7 @@ export function AiClient({
           emptyTitle: "Bạn muốn cải thiện điều gì hôm nay?",
           emptyHint: "AI chỉ đọc dữ liệu thuộc tài khoản của bạn và trả lời theo bối cảnh LifeOS hiện tại.",
           placeholder: "Hỏi LifeOS Coach...",
-          keyMissing: "Chưa có Gemini API key. Điền GEMINI_API_KEY trong .env.local rồi khởi động lại server.",
+          keyMissing: "Chưa có Gemini API key. Hãy mở Cài đặt > Gemini AI để thêm key trực tiếp trên web.",
           supabaseMissing: "Cần kết nối Supabase để AI đọc dữ liệu cá nhân.",
           rename: "Quản lý cuộc trò chuyện",
           titleLabel: "Tên cuộc trò chuyện",
@@ -184,7 +197,7 @@ export function AiClient({
           emptyTitle: "What would you like to improve today?",
           emptyHint: "AI only reads data owned by your account and answers from your current LifeOS context.",
           placeholder: "Ask LifeOS Coach...",
-          keyMissing: "Gemini API key is missing. Add GEMINI_API_KEY to .env.local and restart the server.",
+          keyMissing: "Gemini API key is missing. Open Settings > Gemini AI to add one from the web.",
           supabaseMissing: "Connect Supabase so AI can read your personal data.",
           rename: "Manage conversation",
           titleLabel: "Conversation name",
@@ -215,6 +228,9 @@ export function AiClient({
     const meta = categories.find((item) => item.value === category) ?? categories[0];
     return { ...meta, label: text.categories[category] };
   }
+
+  const canUseAi =
+    supabaseReady && credentialsLoaded && (aiReady || Boolean(browserCredentials));
 
   function newChat() {
     setActiveId(null);
@@ -313,7 +329,7 @@ export function AiClient({
 
   async function sendMessage(message = input) {
     const content = message.trim();
-    if (!content || pending || !aiReady || !supabaseReady) return;
+    if (!content || pending || !canUseAi) return;
 
     const optimistic: AiMessage = {
       id: crypto.randomUUID(),
@@ -342,10 +358,12 @@ export function AiClient({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          apiKey: browserCredentials?.apiKey,
           category: activeConversation?.category ?? newCategory,
           conversationId: activeId,
           locale,
           message: content,
+          model: browserCredentials?.model,
         }),
       });
       const result = await response.json();
@@ -422,7 +440,7 @@ export function AiClient({
         </div>
       </header>
 
-      {!aiReady || !supabaseReady ? (
+      {credentialsLoaded && !canUseAi ? (
         <div className="rounded-xl border border-amber-300/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
           {!supabaseReady ? text.supabaseMissing : text.keyMissing}
         </div>
@@ -532,7 +550,7 @@ export function AiClient({
                 <div className="mt-6 grid w-full gap-2 sm:grid-cols-2">
                   {prompts[locale].map((prompt) => {
                     const Icon = prompt.icon;
-                    return <button key={prompt.text} type="button" onClick={() => void sendMessage(prompt.text)} disabled={!aiReady || !supabaseReady} className="flex min-h-14 items-center gap-3 rounded-xl border border-white/10 bg-white/[0.025] px-3 text-left text-xs font-bold text-slate-300 transition hover:border-cyan-300/25 hover:bg-cyan-400/[0.06] disabled:opacity-40"><Icon className="size-4 shrink-0 text-cyan-300" />{prompt.text}</button>;
+                    return <button key={prompt.text} type="button" onClick={() => void sendMessage(prompt.text)} disabled={!canUseAi} className="flex min-h-14 items-center gap-3 rounded-xl border border-white/10 bg-white/[0.025] px-3 text-left text-xs font-bold text-slate-300 transition hover:border-cyan-300/25 hover:bg-cyan-400/[0.06] disabled:opacity-40"><Icon className="size-4 shrink-0 text-cyan-300" />{prompt.text}</button>;
                   })}
                 </div>
               </div>
@@ -543,7 +561,7 @@ export function AiClient({
             {error ? <p className="mb-2 rounded-lg border border-rose-300/20 bg-rose-400/10 px-3 py-2 text-xs text-rose-200">{error}</p> : null}
             <div className="mx-auto flex max-w-4xl items-end gap-2 rounded-2xl border border-white/10 bg-white/[0.035] p-2 focus-within:border-cyan-300/30">
               <textarea ref={textareaRef} value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); void sendMessage(); } }} placeholder={text.placeholder} rows={1} className="max-h-36 min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-sm text-white outline-none placeholder:text-slate-600" />
-              <Button type="button" onClick={() => void sendMessage()} disabled={!input.trim() || pending || !aiReady || !supabaseReady} className="size-10 rounded-xl bg-[linear-gradient(135deg,#22d3ee,#22c55e)] p-0 text-slate-950"><Send className="size-4" /></Button>
+              <Button type="button" onClick={() => void sendMessage()} disabled={!input.trim() || pending || !canUseAi} className="size-10 rounded-xl bg-[linear-gradient(135deg,#22d3ee,#22c55e)] p-0 text-slate-950"><Send className="size-4" /></Button>
             </div>
           </div>
         </section>

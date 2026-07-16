@@ -25,6 +25,7 @@ export type AiPageData = {
   aiReady: boolean;
   conversations: AiConversation[];
   supabaseReady: boolean;
+  userId: string | null;
 };
 
 function isAiMessage(value: unknown): value is AiMessage {
@@ -57,6 +58,7 @@ export async function getAiPageData(): Promise<AiPageData> {
       aiReady: Boolean(process.env.GEMINI_API_KEY),
       conversations: [],
       supabaseReady: false,
+      userId: null,
     };
   }
 
@@ -79,5 +81,6 @@ export async function getAiPageData(): Promise<AiPageData> {
     aiReady: Boolean(process.env.GEMINI_API_KEY),
     conversations: (data ?? []).map(normalizeConversation),
     supabaseReady: true,
+    userId: user.id,
   };
 }
