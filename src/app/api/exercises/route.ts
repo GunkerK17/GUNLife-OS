@@ -31,13 +31,21 @@ export async function GET(request: Request) {
     const limit = boundedLimit(url.searchParams.get("limit"));
     const catalog = await getExerciseCatalog();
     const bodyParts = Array.from(
-      new Set(catalog.map((item) => item.bodyPart).filter(Boolean)),
-    )
-      .sort((first, second) => first.localeCompare(second));
+      new Map(
+        catalog
+          .filter((item) => item.bodyPart)
+          .map((item) => [item.bodyPart, item.bodyPartVi]),
+      ),
+      ([value, labelVi]) => ({ value, labelVi }),
+    ).sort((first, second) => first.value.localeCompare(second.value));
     const equipments = Array.from(
-      new Set(catalog.map((item) => item.equipment).filter(Boolean)),
-    )
-      .sort((first, second) => first.localeCompare(second));
+      new Map(
+        catalog
+          .filter((item) => item.equipment)
+          .map((item) => [item.equipment, item.equipmentVi]),
+      ),
+      ([value, labelVi]) => ({ value, labelVi }),
+    ).sort((first, second) => first.value.localeCompare(second.value));
     const matches = catalog.filter((item) => {
       if (
         bodyPart &&
@@ -60,10 +68,15 @@ export async function GET(request: Request) {
       return normalizeExerciseSearch(
         [
           item.name,
+          item.nameVi,
           item.bodyPart,
+          item.bodyPartVi,
           item.equipment,
+          item.equipmentVi,
           item.target,
+          item.targetVi,
           item.muscleGroup,
+          item.muscleGroupVi,
           ...item.secondaryMuscles,
         ].join(" "),
       ).includes(query);

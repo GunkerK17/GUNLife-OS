@@ -1,3 +1,8 @@
+import {
+  translateExerciseName,
+  translateExerciseTerm,
+} from "@/lib/exercise-catalog-vi";
+
 const EXERCISE_DATASET_URL =
   "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/data/exercises.json";
 
@@ -16,10 +21,15 @@ type RawExercise = {
 export type ExerciseCatalogItem = {
   id: string;
   name: string;
+  nameVi: string;
   bodyPart: string;
+  bodyPartVi: string;
   equipment: string;
+  equipmentVi: string;
   target: string;
+  targetVi: string;
   muscleGroup: string;
+  muscleGroupVi: string;
   secondaryMuscles: string[];
   instruction: string;
 };
@@ -44,6 +54,10 @@ function toCatalogItem(value: unknown): ExerciseCatalogItem | null {
   const exercise = value as RawExercise;
   const id = text(exercise.id);
   const name = text(exercise.name);
+  const bodyPart = text(exercise.body_part) || text(exercise.category);
+  const equipment = text(exercise.equipment);
+  const target = text(exercise.target);
+  const muscleGroup = text(exercise.muscle_group);
 
   if (!id || !name) {
     return null;
@@ -52,10 +66,15 @@ function toCatalogItem(value: unknown): ExerciseCatalogItem | null {
   return {
     id,
     name,
-    bodyPart: text(exercise.body_part) || text(exercise.category),
-    equipment: text(exercise.equipment),
-    target: text(exercise.target),
-    muscleGroup: text(exercise.muscle_group),
+    nameVi: translateExerciseName(name),
+    bodyPart,
+    bodyPartVi: translateExerciseTerm(bodyPart),
+    equipment,
+    equipmentVi: translateExerciseTerm(equipment),
+    target,
+    targetVi: translateExerciseTerm(target),
+    muscleGroup,
+    muscleGroupVi: translateExerciseTerm(muscleGroup),
     secondaryMuscles: Array.isArray(exercise.secondary_muscles)
       ? exercise.secondary_muscles.map(text).filter(Boolean)
       : [],

@@ -82,20 +82,30 @@ type PhotoScope = "week" | "month";
 type ExerciseCatalogItem = {
   id: string;
   name: string;
+  nameVi: string;
   bodyPart: string;
+  bodyPartVi: string;
   equipment: string;
+  equipmentVi: string;
   target: string;
+  targetVi: string;
   muscleGroup: string;
+  muscleGroupVi: string;
   secondaryMuscles: string[];
   instruction: string;
+};
+
+type ExerciseCatalogFilterOption = {
+  value: string;
+  labelVi: string;
 };
 
 type ExerciseCatalogResponse = {
   items: ExerciseCatalogItem[];
   total: number;
   catalogTotal: number;
-  bodyParts: string[];
-  equipments: string[];
+  bodyParts: ExerciseCatalogFilterOption[];
+  equipments: ExerciseCatalogFilterOption[];
   error?: string;
 };
 
@@ -972,7 +982,9 @@ function ExerciseForm({
 
   function selectCatalogExercise(item: ExerciseCatalogItem) {
     setSelectedCatalogItem(item);
-    setExerciseName(titleCaseExerciseLabel(item.name));
+    setExerciseName(
+      locale === "vi" ? item.nameVi : titleCaseExerciseLabel(item.name),
+    );
     setMuscleGroup(catalogMuscleOption(item));
   }
 
@@ -1026,8 +1038,10 @@ function ExerciseForm({
               >
                 <option value="">{text.allBodyParts}</option>
                 {(catalog?.bodyParts ?? []).map((bodyPart) => (
-                  <option key={bodyPart} value={bodyPart}>
-                    {titleCaseExerciseLabel(bodyPart)}
+                  <option key={bodyPart.value} value={bodyPart.value}>
+                    {locale === "vi"
+                      ? bodyPart.labelVi
+                      : titleCaseExerciseLabel(bodyPart.value)}
                   </option>
                 ))}
               </NativeSelect>
@@ -1038,8 +1052,10 @@ function ExerciseForm({
               >
                 <option value="">{text.allEquipment}</option>
                 {(catalog?.equipments ?? []).map((equipment) => (
-                  <option key={equipment} value={equipment}>
-                    {titleCaseExerciseLabel(equipment)}
+                  <option key={equipment.value} value={equipment.value}>
+                    {locale === "vi"
+                      ? equipment.labelVi
+                      : titleCaseExerciseLabel(equipment.value)}
                   </option>
                 ))}
               </NativeSelect>
@@ -1095,12 +1111,27 @@ function ExerciseForm({
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-black text-white">
-                            {titleCaseExerciseLabel(item.name)}
+                            {locale === "vi"
+                              ? item.nameVi
+                              : titleCaseExerciseLabel(item.name)}
                           </span>
+                          {locale === "vi" ? (
+                            <span className="mt-0.5 block truncate text-[11px] font-semibold text-cyan-200/75">
+                              {titleCaseExerciseLabel(item.name)}
+                            </span>
+                          ) : null}
                           <span className="mt-0.5 block truncate text-xs text-slate-400">
-                            {[item.target, item.bodyPart, item.equipment]
+                            {[
+                              locale === "vi" ? item.targetVi : item.target,
+                              locale === "vi" ? item.bodyPartVi : item.bodyPart,
+                              locale === "vi" ? item.equipmentVi : item.equipment,
+                            ]
                               .filter(Boolean)
-                              .map(titleCaseExerciseLabel)
+                              .map((value) =>
+                                locale === "vi"
+                                  ? value
+                                  : titleCaseExerciseLabel(value),
+                              )
                               .join(" · ")}
                           </span>
                         </span>
@@ -1181,13 +1212,19 @@ function ExerciseForm({
             <div>
               <span className="text-slate-500">{text.targetMuscle}</span>
               <p className="mt-0.5 font-bold text-emerald-100">
-                {titleCaseExerciseLabel(selectedCatalogItem.target || selectedCatalogItem.muscleGroup)}
+                {locale === "vi"
+                  ? selectedCatalogItem.targetVi || selectedCatalogItem.muscleGroupVi
+                  : titleCaseExerciseLabel(
+                      selectedCatalogItem.target || selectedCatalogItem.muscleGroup,
+                    )}
               </p>
             </div>
             <div>
               <span className="text-slate-500">{text.equipment}</span>
               <p className="mt-0.5 font-bold text-emerald-100">
-                {titleCaseExerciseLabel(selectedCatalogItem.equipment || "None")}
+                {locale === "vi"
+                  ? selectedCatalogItem.equipmentVi || "Không cần dụng cụ"
+                  : titleCaseExerciseLabel(selectedCatalogItem.equipment || "None")}
               </p>
             </div>
           </div>
