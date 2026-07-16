@@ -989,7 +989,7 @@ function ExerciseForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-3 sm:space-y-4">
       {exercise ? <input type="hidden" name="id" value={exercise.id} /> : null}
       <input type="hidden" name="plan_id" value={planId} />
       <input
@@ -1000,16 +1000,16 @@ function ExerciseForm({
 
       {!exercise ? (
         <section className="overflow-hidden rounded-2xl border border-cyan-300/20 bg-cyan-400/[0.035]">
-          <div className="flex flex-col gap-3 border-b border-white/10 p-3 sm:flex-row sm:items-start sm:justify-between sm:p-4">
+          <div className="flex items-start justify-between gap-2 border-b border-white/10 p-3 sm:gap-3 sm:p-4">
             <div className="flex min-w-0 items-start gap-3">
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-cyan-300/20 bg-cyan-400/10 text-cyan-200">
+              <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-cyan-300/20 bg-cyan-400/10 text-cyan-200 sm:size-10">
                 <Database className="size-5" />
               </span>
               <span className="min-w-0">
                 <span className="block text-sm font-black text-white">
                   {text.exerciseLibrary}
                 </span>
-                <span className="mt-0.5 block text-xs leading-5 text-slate-400">
+                <span className="mt-0.5 line-clamp-2 block text-[11px] leading-4 text-slate-400 sm:text-xs sm:leading-5">
                   {text.exerciseLibraryHint}
                 </span>
               </span>
@@ -1019,7 +1019,7 @@ function ExerciseForm({
             </Badge>
           </div>
 
-          <div className="space-y-3 p-3 sm:p-4">
+          <div className="space-y-2.5 p-3 sm:space-y-3 sm:p-4">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-500" />
               <Input
@@ -1030,7 +1030,7 @@ function ExerciseForm({
               />
             </div>
 
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid grid-cols-2 gap-2">
               <NativeSelect
                 name="catalog_body_part"
                 value={catalogBodyPart}
@@ -1083,7 +1083,7 @@ function ExerciseForm({
                     </span>
                   ) : null}
                 </div>
-                <div className="max-h-56 space-y-1.5 overflow-y-auto pr-1 [scrollbar-color:rgba(34,211,238,0.35)_transparent]">
+                <div className="max-h-44 space-y-1.5 overflow-y-auto overscroll-contain pr-1 [scrollbar-color:rgba(34,211,238,0.35)_transparent] sm:max-h-56">
                   {(catalog?.items ?? []).map((item) => {
                     const selected = selectedCatalogItem?.id === item.id;
 
@@ -1179,7 +1179,7 @@ function ExerciseForm({
         />
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
         <div className="grid gap-2">
           <FieldLabel>{text.muscleGroup}</FieldLabel>
           <NativeSelect
@@ -1208,7 +1208,7 @@ function ExerciseForm({
 
       {selectedCatalogItem ? (
         <div className="rounded-xl border border-emerald-300/20 bg-emerald-400/[0.055] p-3">
-          <div className="grid gap-2 text-xs sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
               <span className="text-slate-500">{text.targetMuscle}</span>
               <p className="mt-0.5 font-bold text-emerald-100">
@@ -1292,13 +1292,15 @@ function ExerciseForm({
         </p>
       </div>
 
-      <Button
-        type="submit"
-        disabled={pending}
-        className="h-11 w-full rounded-xl bg-[linear-gradient(135deg,#22d3ee,#22c55e)] font-black text-slate-950 hover:opacity-90"
-      >
-        {pending ? text.saving : exercise ? text.updateExercise : text.addExercise}
-      </Button>
+      <div className="sticky bottom-0 z-10 -mx-1 bg-gradient-to-t from-[#07111d] via-[#07111d] to-transparent px-1 pt-3">
+        <Button
+          type="submit"
+          disabled={pending}
+          className="h-11 w-full rounded-xl bg-[linear-gradient(135deg,#22d3ee,#22c55e)] font-black text-slate-950 shadow-[0_12px_35px_rgba(34,197,94,0.18)] hover:opacity-90"
+        >
+          {pending ? text.saving : exercise ? text.updateExercise : text.addExercise}
+        </Button>
+      </div>
     </form>
   );
 }
@@ -1983,30 +1985,32 @@ export function WorkoutClient({
                     {text.addExercise}
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-h-[92vh] overflow-y-auto border-cyan-300/20 bg-[#07111d] text-white sm:max-w-2xl">
-                  <DialogHeader>
+                <DialogContent className="grid h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-none grid-rows-[auto_minmax(0,1fr)] gap-0 overflow-hidden border-cyan-300/20 bg-[#07111d] p-0 text-white sm:h-auto sm:max-h-[92vh] sm:w-full sm:max-w-2xl">
+                  <DialogHeader className="border-b border-white/10 bg-[#091725]/95 p-4 pr-12 sm:p-5 sm:pr-12">
                     <DialogTitle className="text-xl font-black">
                       {text.addExercise}
                     </DialogTitle>
-                    <DialogDescription className="text-slate-400">
+                    <DialogDescription className="max-w-full text-xs leading-5 text-slate-400 sm:text-sm">
                       {text.addExerciseDesc}
                     </DialogDescription>
                   </DialogHeader>
-                  {selectedPlan ? (
-                    <ExerciseForm
-                      planId={selectedPlan.id}
-                      nextOrder={exercises.length}
-                      pending={isPending}
-                      onSubmit={(event) =>
-                        runFormAction(
-                          event,
-                          createWorkoutExercise,
-                          text.exerciseAdded,
-                          () => setExerciseDialogOpen(false),
-                        )
-                      }
-                    />
-                  ) : null}
+                  <div className="min-h-0 overflow-y-auto overscroll-contain p-3 sm:p-5">
+                    {selectedPlan ? (
+                      <ExerciseForm
+                        planId={selectedPlan.id}
+                        nextOrder={exercises.length}
+                        pending={isPending}
+                        onSubmit={(event) =>
+                          runFormAction(
+                            event,
+                            createWorkoutExercise,
+                            text.exerciseAdded,
+                            () => setExerciseDialogOpen(false),
+                          )
+                        }
+                      />
+                    ) : null}
+                  </div>
                 </DialogContent>
               </Dialog>
             </div>
