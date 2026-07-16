@@ -262,7 +262,7 @@ function Panel({
   return (
     <section
       className={cn(
-        "min-w-0 max-w-full rounded-2xl border border-white/10 bg-slate-950/62 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_18px_55px_rgba(0,0,0,0.18)] backdrop-blur-xl",
+        "lifeos-panel",
         className,
       )}
     >
@@ -1241,7 +1241,7 @@ export function FinanceClient({
                 return (
                   <div
                     key={wallet.id}
-                    className="group rounded-2xl border border-white/10 bg-white/[0.035] p-3 transition hover:border-emerald-300/25"
+                    className="lifeos-subpanel group p-3 transition hover:border-emerald-300/25 hover:bg-white/[0.04]"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex min-w-0 items-center gap-3">

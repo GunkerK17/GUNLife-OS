@@ -182,12 +182,12 @@ function SettingsSection({
   return (
     <section
       className={cn(
-        "overflow-hidden rounded-2xl border border-white/10 bg-slate-950/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_50px_rgba(0,0,0,0.18)] backdrop-blur-xl",
+        "lifeos-panel overflow-hidden",
         className,
       )}
     >
-      <div className="flex items-start gap-3 border-b border-white/10 bg-white/[0.025] p-4">
-        <div className="grid size-10 shrink-0 place-items-center rounded-xl border border-emerald-300/20 bg-emerald-400/10 text-emerald-300">
+      <div className="flex items-start gap-3 border-b border-white/[0.07] bg-white/[0.018] p-3.5 sm:p-4">
+        <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-emerald-400/10 text-emerald-300 ring-1 ring-emerald-300/15 sm:size-10 sm:rounded-xl">
           <Icon className="size-5" />
         </div>
         <div>
@@ -195,7 +195,7 @@ function SettingsSection({
           <p className="mt-1 text-xs leading-5 text-slate-400">{description}</p>
         </div>
       </div>
-      <div className="p-4">{children}</div>
+      <div className="p-3.5 sm:p-4">{children}</div>
     </section>
   );
 }
@@ -275,7 +275,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   const completionRate = Math.round((completedFields / profileValues.length) * 100);
 
   return (
-    <div className="mx-auto min-w-0 w-full max-w-[1500px] space-y-4 overflow-hidden">
+    <div className="mx-auto min-w-0 w-full max-w-[1380px] space-y-4 overflow-hidden">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="flex items-center gap-3">
@@ -306,8 +306,8 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
         <AlertMessage error={text.supabaseMissing} />
       ) : null}
 
-      <section className="grid overflow-hidden rounded-2xl border border-emerald-300/15 bg-[radial-gradient(circle_at_top_right,rgba(34,197,94,0.16),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(34,211,238,0.11),transparent_34%),rgba(2,8,23,0.72)] shadow-[0_24px_70px_rgba(0,0,0,0.25)] lg:grid-cols-[minmax(0,1fr)_390px]">
-        <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center md:p-6">
+      <section className="lifeos-panel grid overflow-hidden border-emerald-300/15 bg-[radial-gradient(circle_at_top_right,rgba(34,197,94,0.12),transparent_36%),radial-gradient(circle_at_bottom_left,rgba(34,211,238,0.08),transparent_34%),rgba(2,8,23,0.62)] lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center md:p-5">
           <Avatar className="size-20 shrink-0 border-2 border-emerald-300/30 shadow-[0_0_40px_rgba(34,197,94,0.2)] md:size-24">
             <AvatarImage src={avatarUrl} alt={fullName || text.userAlt} />
             <AvatarFallback className="bg-emerald-400/10 text-2xl font-black text-emerald-300">
@@ -339,7 +339,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
           </div>
         </div>
 
-        <div className="border-t border-white/10 bg-black/10 p-5 lg:border-l lg:border-t-0 md:p-6">
+        <div className="border-t border-white/[0.07] bg-black/10 p-4 md:p-5 lg:border-l lg:border-t-0">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.24em] text-emerald-300">
@@ -382,7 +382,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
       </section>
 
       <form action={updateProfileSettings} className="space-y-4">
-        <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(340px,0.65fr)]">
+        <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(330px,0.6fr)]">
           <div className="space-y-4">
             <SettingsSection
               title={text.personalTitle}
@@ -451,7 +451,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                 <Field label={text.fatDay}>
                   <Input name="dailyFatGoal" type="number" defaultValue={profile?.daily_fat_goal ?? 65} className={inputClassName} />
                 </Field>
-                <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.025] p-3">
+                <div className="lifeos-subpanel flex items-center gap-3 p-3">
                   <div className="grid size-9 place-items-center rounded-lg bg-orange-400/10 text-orange-300"><Utensils className="size-4" /></div>
                   <div><p className="text-xs font-bold text-white">{text.macroTargets}</p><p className="mt-0.5 text-[10px] text-slate-500">{text.syncNutrition}</p></div>
                 </div>
@@ -474,24 +474,26 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
             </SettingsSection>
 
             <SettingsSection title={text.securityTitle} description={text.securityDescription} icon={LockKeyhole}>
-              <div className="space-y-2.5">
-                {[
-                  [text.loginEmail, authUser?.email ?? text.unavailable],
-                  [text.provider, authUser?.app_metadata.provider ?? "email"],
-                  [text.emailVerification, authUser?.email_confirmed_at ? text.verified : text.unverified],
-                ].map(([label, value]) => (
-                  <div key={label} className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.025] px-3 py-3">
-                    <span className="text-xs text-slate-400">{label}</span>
-                    <span className="max-w-[180px] truncate text-xs font-bold text-white">{value}</span>
-                  </div>
-                ))}
-                <div className="flex items-center gap-2 pt-1 text-[11px] text-emerald-300"><CheckCircle2 className="size-4" />{text.sessionProtected}</div>
+              <div className="space-y-3">
+                <div className="lifeos-row-group divide-y divide-white/[0.06]">
+                  {[
+                    [text.loginEmail, authUser?.email ?? text.unavailable],
+                    [text.provider, authUser?.app_metadata.provider ?? "email"],
+                    [text.emailVerification, authUser?.email_confirmed_at ? text.verified : text.unverified],
+                  ].map(([label, value]) => (
+                    <div key={label} className="flex items-center justify-between gap-3 px-3 py-3">
+                      <span className="text-xs text-slate-400">{label}</span>
+                      <span className="max-w-[180px] truncate text-xs font-bold text-white">{value}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 text-[11px] text-emerald-300"><CheckCircle2 className="size-4" />{text.sessionProtected}</div>
               </div>
             </SettingsSection>
           </div>
         </div>
 
-        <div className="sticky bottom-20 z-20 flex flex-col gap-3 rounded-2xl border border-white/10 bg-slate-950/90 p-3 shadow-[0_-18px_50px_rgba(0,0,0,0.25)] backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between lg:bottom-3">
+        <div className="lifeos-panel relative flex flex-col gap-3 border-emerald-300/10 p-3 sm:flex-row sm:items-center sm:justify-between lg:sticky lg:bottom-3 lg:z-20 lg:bg-slate-950/88">
           <div className="flex items-center gap-3">
             <div className="grid size-9 place-items-center rounded-xl bg-emerald-400/10 text-emerald-300"><Save className="size-4" /></div>
             <div><p className="text-sm font-bold text-white">{text.saveAll}</p><p className="text-[11px] text-slate-500">{text.saveHint}</p></div>

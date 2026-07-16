@@ -167,7 +167,7 @@ function Panel({
   return (
     <section
       className={cn(
-        "min-w-0 max-w-full rounded-2xl border border-white/10 bg-slate-950/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_18px_55px_rgba(0,0,0,0.18)] backdrop-blur-xl",
+        "lifeos-panel",
         className,
       )}
     >
@@ -444,7 +444,7 @@ function FinanceGoalHistory({
   );
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
+    <div className="lifeos-subpanel p-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h3 className="font-black text-white">
@@ -538,7 +538,7 @@ function FinanceGoalHistory({
         ].map((item) => (
           <div
             key={item.label}
-            className="rounded-xl border border-white/10 bg-white/[0.035] p-3"
+            className="lifeos-subpanel p-3"
           >
             <p className="text-[11px] font-bold text-slate-500">
               {item.label}
@@ -555,7 +555,7 @@ function FinanceGoalHistory({
         {segments.map((segment) => (
           <div
             key={segment.index}
-            className="rounded-xl border border-white/10 bg-white/[0.025] p-3"
+            className="lifeos-subpanel p-3"
           >
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
@@ -1324,7 +1324,7 @@ function GoalCard({
       <div className="grid gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_280px]">
         <div className="space-y-4">
           <div className="grid gap-2 sm:grid-cols-2">
-            <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
+            <div className="lifeos-subpanel p-3">
               <p className="text-xs text-slate-400">
                 {isFinanceGoal
                   ? locale === "vi"
@@ -1585,7 +1585,7 @@ function GoalCard({
         <aside className="space-y-3">
           <form
             onSubmit={onProgressSubmit}
-            className="rounded-xl border border-white/10 bg-white/[0.035] p-3"
+            className="lifeos-subpanel p-3"
           >
             <input type="hidden" name="goal_id" value={goal.id} />
             <p className="text-sm font-black text-white">
@@ -1636,7 +1636,7 @@ function GoalCard({
                         {formatGoalMoney(financeTransactionTotal)}
                       </p>
                     </div>
-                    <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
+                    <div className="lifeos-subpanel p-3">
                       <p className="text-[11px] font-bold text-slate-400">
                         {locale === "vi" ? "Ví gắn Goal" : "Linked wallets"}
                       </p>
@@ -1650,7 +1650,7 @@ function GoalCard({
                     </div>
                   </div>
                   {goal.linkedWallets.length > 0 ? (
-                    <div className="space-y-1.5 rounded-xl border border-white/10 bg-white/[0.025] p-3">
+                    <div className="lifeos-subpanel space-y-1.5 p-3">
                       {goal.linkedWallets.map((wallet) => (
                         <div
                           key={wallet.id}
@@ -1681,7 +1681,7 @@ function GoalCard({
                       <ArrowRight className="size-3.5" />
                     </Link>
                   )}
-                  <details className="rounded-xl border border-white/10 bg-white/[0.025] p-3">
+                  <details className="lifeos-subpanel p-3">
                     <summary className="cursor-pointer text-[11px] font-black text-slate-400">
                       {locale === "vi"
                         ? "Chỉnh số dư gốc (chỉ khi nhập sai)"
@@ -1743,7 +1743,7 @@ function GoalCard({
             </div>
           </form>
 
-          <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
+          <div className="lifeos-subpanel p-3">
             <p className="text-sm font-black text-white">{t("goals.linkedModules")}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {meta.modules.map((module) => (
@@ -1759,7 +1759,7 @@ function GoalCard({
           </div>
 
           {goal.category === "learning" ? (
-            <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
+            <div className="lifeos-subpanel p-3">
             <p className="text-sm font-black text-white">{t("goals.linkedSkillsTitle")}</p>
             {goal.linkedSkills.length > 0 ? (
               <div className="mt-3 space-y-2">

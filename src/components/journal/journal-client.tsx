@@ -1598,7 +1598,7 @@ export function JournalClient({
             emptyText={text.noResetData}
             title={text.trend}
           />
-          <section className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
+          <section className="lifeos-panel p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="font-black text-white">{text.calendar}</h2>
@@ -1663,7 +1663,7 @@ export function JournalClient({
             </div>
           </section>
 
-          <section className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
+          <section className="lifeos-panel p-4">
             <div className="flex items-center justify-between">
               <h2 className="font-black text-white">{text.stats}</h2>
               <Flame className="size-5 text-amber-300" />
@@ -1677,13 +1677,13 @@ export function JournalClient({
                   value: totalWords.toLocaleString(locale === "vi" ? "vi-VN" : "en-US"),
                 },
               ].map((item) => (
-                <div key={item.label} className="rounded-xl border border-white/10 bg-white/[0.03] p-2.5">
+                <div key={item.label} className="lifeos-subpanel p-2.5">
                   <p className="text-lg font-black text-white">{item.value}</p>
                   <p className="mt-1 text-[9px] leading-4 text-slate-500">{item.label}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-4 flex items-center gap-4 rounded-xl border border-white/10 bg-white/[0.025] p-3">
+            <div className="lifeos-subpanel mt-4 flex items-center gap-4 p-3">
               <div
                 className="grid size-20 shrink-0 place-items-center rounded-full"
                 style={{ background: moodGradient }}
@@ -1713,7 +1713,7 @@ export function JournalClient({
           </section>
         </aside>
 
-        <section className="rounded-2xl border border-white/10 bg-slate-950/45 p-4 sm:p-5 lg:col-span-2">
+        <section className="lifeos-panel p-4 sm:p-5 lg:col-span-2">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-lg font-black text-white">{text.history}</h2>

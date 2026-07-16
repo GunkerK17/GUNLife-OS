@@ -429,7 +429,7 @@ export function AiClient({
       ) : null}
 
       <div className="grid min-h-0 min-w-0 flex-1 gap-3 lg:grid-cols-[310px_minmax(0,1fr)]">
-        <aside className="min-w-0 rounded-2xl border border-white/10 bg-slate-950/55 p-3">
+        <aside className="lifeos-panel min-w-0 p-3">
           <div className="flex items-center justify-between gap-2">
             <div>
               <h2 className="text-sm font-black text-white">{text.history}</h2>
@@ -487,7 +487,7 @@ export function AiClient({
           </div>
         </aside>
 
-        <section className="flex min-h-[620px] min-w-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-slate-950/55 lg:min-h-0">
+        <section className="lifeos-panel flex min-h-[620px] min-w-0 flex-col overflow-hidden lg:min-h-0">
           <div className="flex min-h-14 items-center justify-between gap-3 border-b border-white/10 bg-white/[0.02] px-3 py-2 sm:px-4">
             <div className="flex min-w-0 items-center gap-2.5">
               <div className={cn("grid size-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.035]", activeCategory.color)}><ActiveCategoryIcon className="size-4" /></div>

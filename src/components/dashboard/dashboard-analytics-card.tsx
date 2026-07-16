@@ -114,7 +114,7 @@ export function DashboardAnalyticsCard({ data }: { data: DashboardAnalyticsData 
     : "—";
 
   return (
-    <section className="min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-slate-950/62 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_18px_55px_rgba(0,0,0,0.18)] backdrop-blur-xl">
+    <section className="lifeos-panel overflow-hidden">
       <div className="flex flex-col gap-3 border-b border-white/10 bg-[linear-gradient(120deg,rgba(34,211,238,0.09),rgba(34,197,94,0.08),transparent)] p-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-[10px] font-black uppercase tracking-[0.26em] text-cyan-300">

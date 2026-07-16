@@ -446,8 +446,8 @@ export function DashboardChrome({
 }: DashboardChromeProps) {
   return (
     <div className="dark min-h-screen overflow-x-hidden bg-[#02050b] text-white">
-      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(120deg,rgba(34,211,238,0.12),transparent_32%),linear-gradient(240deg,rgba(34,197,94,0.14),transparent_35%),linear-gradient(180deg,#06101d_0%,#02050b_52%,#010308_100%)]" />
-      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(0deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:58px_58px] opacity-55" />
+      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(120deg,rgba(34,211,238,0.09),transparent_32%),linear-gradient(240deg,rgba(34,197,94,0.1),transparent_35%),linear-gradient(180deg,#06101d_0%,#02050b_52%,#010308_100%)]" />
+      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.028)_1px,transparent_1px),linear-gradient(0deg,rgba(255,255,255,0.018)_1px,transparent_1px)] bg-[size:64px_64px] opacity-40" />
 
       <Sidebar user={user} />
 
