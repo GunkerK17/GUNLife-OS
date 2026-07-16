@@ -2,24 +2,29 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import type { FormEvent, ReactNode } from "react";
+import type { ChangeEventHandler, FormEvent, ReactNode } from "react";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import {
   Activity,
   BarChart3,
+  BookOpen,
   CalendarDays,
   Check,
   ChevronLeft,
   ChevronRight,
   Clock3,
+  Database,
   Dumbbell,
+  ExternalLink,
   Flame,
   HeartPulse,
   ImageIcon,
+  LoaderCircle,
   Pencil,
   PlayCircle,
   Plus,
   RotateCcw,
+  Search,
   ShieldCheck,
   Sparkles,
   Trash2,
@@ -74,6 +79,26 @@ type WorkoutClientProps = {
 type WorkoutAction<T> = (formData: FormData) => Promise<ActionResult<T>>;
 type PhotoScope = "week" | "month";
 
+type ExerciseCatalogItem = {
+  id: string;
+  name: string;
+  bodyPart: string;
+  equipment: string;
+  target: string;
+  muscleGroup: string;
+  secondaryMuscles: string[];
+  instruction: string;
+};
+
+type ExerciseCatalogResponse = {
+  items: ExerciseCatalogItem[];
+  total: number;
+  catalogTotal: number;
+  bodyParts: string[];
+  equipments: string[];
+  error?: string;
+};
+
 const workoutCopy = {
   en: {
     activePlan: "Active plan",
@@ -81,6 +106,8 @@ const workoutCopy = {
     addBodyPhoto: "Add body check / workout photo",
     addExercise: "Add exercise",
     addExerciseDesc: "Add one movement with sets, reps, kg and rest.",
+    allBodyParts: "All body parts",
+    allEquipment: "All equipment",
     addPhoto: "Add workout photo",
     avg: "avg",
     avgHr: "Avg HR",
@@ -114,9 +141,16 @@ const workoutCopy = {
     exerciseDeleted: "Exercise deleted.",
     exercises: "exercises",
     exerciseUpdated: "Exercise updated.",
+    exerciseLibrary: "Exercise library",
+    exerciseLibraryHint: "Search 1,324 movements by name, muscle or equipment.",
     free: "free",
     freeWorkout: "Free workout",
     fullBody: "Full body",
+    catalogLoading: "Loading exercise library...",
+    catalogResults: "matches",
+    catalogUnavailable: "Library unavailable. You can still enter the exercise manually.",
+    dataSource: "Metadata: exercises-dataset (MIT)",
+    equipment: "Equipment",
     instructionHint: "Paste a YouTube, TikTok or Instagram link to open while training.",
     instructionVideo: "Instruction video",
     intensity: "Intensity",
@@ -127,6 +161,7 @@ const workoutCopy = {
     logWorkoutDesc: "Mark the workout done, save calories and attach a photo.",
     max: "max",
     maxHr: "Max HR",
+    manualEntry: "Manual details",
     minuteSession: "min session",
     month: "Month",
     muscleGroup: "Muscle group",
@@ -161,6 +196,8 @@ const workoutCopy = {
     restSeconds: "Rest seconds",
     savePhoto: "Upload",
     saving: "Saving...",
+    searchExercises: "Search exercises...",
+    selectedFromCatalog: "Selected from catalog",
     scheduledToday: "Scheduled today",
     sessionLogs: "Session logs",
     sets: "Sets",
@@ -170,6 +207,7 @@ const workoutCopy = {
     today: "Today",
     todayPlan: "Today plan",
     todayTag: "today",
+    targetMuscle: "Target",
     trainingFocus: "Training focus",
     updateExercise: "Update exercise",
     updatePlan: "Update plan",
@@ -189,6 +227,8 @@ const workoutCopy = {
     addBodyPhoto: "Thêm ảnh body / ảnh tập luyện",
     addExercise: "Thêm bài tập",
     addExerciseDesc: "Thêm một động tác với số hiệp, số lần, mức tạ và thời gian nghỉ.",
+    allBodyParts: "Tất cả vùng cơ thể",
+    allEquipment: "Tất cả dụng cụ",
     addPhoto: "Thêm ảnh tập luyện",
     avg: "trung bình",
     avgHr: "Nhịp tim TB",
@@ -222,9 +262,16 @@ const workoutCopy = {
     exerciseDeleted: "Đã xóa bài tập.",
     exercises: "bài tập",
     exerciseUpdated: "Đã cập nhật bài tập.",
+    exerciseLibrary: "Thư viện bài tập",
+    exerciseLibraryHint: "Tìm trong 1.324 động tác theo tên, nhóm cơ hoặc dụng cụ.",
     free: "tự do",
     freeWorkout: "Buổi tập tự do",
     fullBody: "Toàn thân",
+    catalogLoading: "Đang tải thư viện bài tập...",
+    catalogResults: "kết quả",
+    catalogUnavailable: "Tạm thời không tải được thư viện. Bạn vẫn có thể nhập bài tập thủ công.",
+    dataSource: "Dữ liệu: exercises-dataset (MIT)",
+    equipment: "Dụng cụ",
     instructionHint: "Dán link YouTube, TikTok hoặc Instagram để mở khi tập.",
     instructionVideo: "Video hướng dẫn",
     intensity: "Cường độ",
@@ -235,6 +282,7 @@ const workoutCopy = {
     logWorkoutDesc: "Đánh dấu đã tập xong, lưu calo và đính kèm ảnh.",
     max: "tối đa",
     maxHr: "Nhịp tim tối đa",
+    manualEntry: "Thông số thủ công",
     minuteSession: "phút tập",
     month: "Tháng",
     muscleGroup: "Nhóm cơ",
@@ -269,6 +317,8 @@ const workoutCopy = {
     restSeconds: "Thời gian nghỉ (giây)",
     savePhoto: "Tải lên",
     saving: "Đang lưu...",
+    searchExercises: "Tìm bài tập...",
+    selectedFromCatalog: "Đã chọn từ thư viện",
     scheduledToday: "Lịch tập hôm nay",
     sessionLogs: "Nhật ký buổi tập",
     sets: "Số hiệp",
@@ -278,6 +328,7 @@ const workoutCopy = {
     today: "Hôm nay",
     todayPlan: "Giáo án hôm nay",
     todayTag: "hôm nay",
+    targetMuscle: "Cơ mục tiêu",
     trainingFocus: "Trọng tâm tập luyện",
     updateExercise: "Cập nhật bài tập",
     updatePlan: "Cập nhật giáo án",
@@ -346,6 +397,78 @@ const muscleNamesVi: Record<string, string> = {
   Shoulders: "Vai",
   Triceps: "Tay sau",
 };
+
+function catalogMuscleOption(exercise: ExerciseCatalogItem) {
+  const searchValue = [
+    exercise.bodyPart,
+    exercise.target,
+    exercise.muscleGroup,
+    ...exercise.secondaryMuscles,
+  ]
+    .join(" ")
+    .toLocaleLowerCase("en-US");
+
+  if (searchValue.includes("chest") || searchValue.includes("pectoral")) {
+    return "Chest";
+  }
+
+  if (
+    searchValue.includes("back") ||
+    searchValue.includes("lat") ||
+    searchValue.includes("rhomboid")
+  ) {
+    return "Back";
+  }
+
+  if (searchValue.includes("shoulder") || searchValue.includes("delt")) {
+    return "Shoulders";
+  }
+
+  if (searchValue.includes("biceps")) {
+    return "Biceps";
+  }
+
+  if (searchValue.includes("triceps")) {
+    return "Triceps";
+  }
+
+  if (searchValue.includes("glute")) {
+    return "Glutes";
+  }
+
+  if (
+    searchValue.includes("waist") ||
+    searchValue.includes("abs") ||
+    searchValue.includes("core") ||
+    searchValue.includes("oblique")
+  ) {
+    return "Core";
+  }
+
+  if (searchValue.includes("cardio")) {
+    return "Conditioning";
+  }
+
+  if (
+    searchValue.includes("leg") ||
+    searchValue.includes("quad") ||
+    searchValue.includes("hamstring") ||
+    searchValue.includes("calf") ||
+    searchValue.includes("calves")
+  ) {
+    return "Legs";
+  }
+
+  return "Full body";
+}
+
+function titleCaseExerciseLabel(value: string) {
+  return value
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toLocaleUpperCase("en-US") + word.slice(1))
+    .join(" ");
+}
 
 function Panel({
   children,
@@ -660,16 +783,22 @@ function WorkoutPhotoHistoryPanel({
 function NativeSelect({
   name,
   defaultValue,
+  value,
+  onChange,
   children,
 }: {
   name: string;
   defaultValue?: string;
+  value?: string;
+  onChange?: ChangeEventHandler<HTMLSelectElement>;
   children: ReactNode;
 }) {
   return (
     <select
       name={name}
-      defaultValue={defaultValue}
+      defaultValue={value === undefined ? defaultValue : undefined}
+      value={value}
+      onChange={onChange}
       className="h-10 w-full rounded-lg border border-white/10 bg-slate-950/70 px-3 text-sm font-semibold text-white outline-none transition focus:border-emerald-300/60 focus:ring-2 focus:ring-emerald-300/15"
     >
       {children}
@@ -770,6 +899,82 @@ function ExerciseForm({
   pending: boolean;
 }) {
   const { locale, text } = useWorkoutCopy();
+  const [exerciseName, setExerciseName] = useState(
+    exercise?.exercise_name ?? "",
+  );
+  const [muscleGroup, setMuscleGroup] = useState(
+    exercise?.muscle_group ?? "Chest",
+  );
+  const [catalogQuery, setCatalogQuery] = useState("");
+  const [catalogBodyPart, setCatalogBodyPart] = useState("");
+  const [catalogEquipment, setCatalogEquipment] = useState("");
+  const [catalog, setCatalog] = useState<ExerciseCatalogResponse | null>(null);
+  const [catalogLoading, setCatalogLoading] = useState(!exercise);
+  const [catalogError, setCatalogError] = useState<string | null>(null);
+  const [selectedCatalogItem, setSelectedCatalogItem] =
+    useState<ExerciseCatalogItem | null>(null);
+
+  useEffect(() => {
+    if (exercise) {
+      return;
+    }
+
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setCatalogLoading(true);
+      setCatalogError(null);
+
+      try {
+        const parameters = new URLSearchParams({ limit: "18" });
+
+        if (catalogQuery.trim()) {
+          parameters.set("q", catalogQuery.trim());
+        }
+
+        if (catalogBodyPart) {
+          parameters.set("bodyPart", catalogBodyPart);
+        }
+
+        if (catalogEquipment) {
+          parameters.set("equipment", catalogEquipment);
+        }
+
+        const response = await fetch(`/api/exercises?${parameters.toString()}`, {
+          signal: controller.signal,
+        });
+        const payload = (await response.json()) as ExerciseCatalogResponse;
+
+        if (!response.ok) {
+          throw new Error(payload.error || "Exercise catalog request failed.");
+        }
+
+        setCatalog(payload);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+
+        setCatalogError(
+          error instanceof Error ? error.message : "Exercise catalog request failed.",
+        );
+      } finally {
+        if (!controller.signal.aborted) {
+          setCatalogLoading(false);
+        }
+      }
+    }, 250);
+
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [catalogBodyPart, catalogEquipment, catalogQuery, exercise]);
+
+  function selectCatalogExercise(item: ExerciseCatalogItem) {
+    setSelectedCatalogItem(item);
+    setExerciseName(titleCaseExerciseLabel(item.name));
+    setMuscleGroup(catalogMuscleOption(item));
+  }
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -781,11 +986,162 @@ function ExerciseForm({
         value={exercise?.order_index ?? nextOrder}
       />
 
+      {!exercise ? (
+        <section className="overflow-hidden rounded-2xl border border-cyan-300/20 bg-cyan-400/[0.035]">
+          <div className="flex flex-col gap-3 border-b border-white/10 p-3 sm:flex-row sm:items-start sm:justify-between sm:p-4">
+            <div className="flex min-w-0 items-start gap-3">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-cyan-300/20 bg-cyan-400/10 text-cyan-200">
+                <Database className="size-5" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-black text-white">
+                  {text.exerciseLibrary}
+                </span>
+                <span className="mt-0.5 block text-xs leading-5 text-slate-400">
+                  {text.exerciseLibraryHint}
+                </span>
+              </span>
+            </div>
+            <Badge className="w-fit shrink-0 border-cyan-300/20 bg-cyan-400/10 text-cyan-100">
+              {catalog?.catalogTotal?.toLocaleString(locale === "vi" ? "vi-VN" : "en-US") ?? "1,324"}
+            </Badge>
+          </div>
+
+          <div className="space-y-3 p-3 sm:p-4">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-500" />
+              <Input
+                value={catalogQuery}
+                onChange={(event) => setCatalogQuery(event.target.value)}
+                placeholder={text.searchExercises}
+                className="h-11 border-white/10 bg-slate-950/75 pl-9 text-white"
+              />
+            </div>
+
+            <div className="grid gap-2 sm:grid-cols-2">
+              <NativeSelect
+                name="catalog_body_part"
+                value={catalogBodyPart}
+                onChange={(event) => setCatalogBodyPart(event.target.value)}
+              >
+                <option value="">{text.allBodyParts}</option>
+                {(catalog?.bodyParts ?? []).map((bodyPart) => (
+                  <option key={bodyPart} value={bodyPart}>
+                    {titleCaseExerciseLabel(bodyPart)}
+                  </option>
+                ))}
+              </NativeSelect>
+              <NativeSelect
+                name="catalog_equipment"
+                value={catalogEquipment}
+                onChange={(event) => setCatalogEquipment(event.target.value)}
+              >
+                <option value="">{text.allEquipment}</option>
+                {(catalog?.equipments ?? []).map((equipment) => (
+                  <option key={equipment} value={equipment}>
+                    {titleCaseExerciseLabel(equipment)}
+                  </option>
+                ))}
+              </NativeSelect>
+            </div>
+
+            {catalogLoading ? (
+              <div className="flex min-h-24 items-center justify-center gap-2 rounded-xl border border-white/10 bg-slate-950/45 text-sm font-semibold text-slate-400">
+                <LoaderCircle className="size-4 animate-spin text-cyan-300" />
+                {text.catalogLoading}
+              </div>
+            ) : catalogError ? (
+              <div className="rounded-xl border border-amber-300/20 bg-amber-400/10 p-3 text-sm leading-6 text-amber-100">
+                {text.catalogUnavailable}
+              </div>
+            ) : (
+              <div>
+                <div className="mb-2 flex items-center justify-between gap-3 text-[11px] font-bold uppercase tracking-[0.12em] text-slate-500">
+                  <span>
+                    {(catalog?.total ?? 0).toLocaleString(locale === "vi" ? "vi-VN" : "en-US")} {text.catalogResults}
+                  </span>
+                  {selectedCatalogItem ? (
+                    <span className="inline-flex items-center gap-1 text-emerald-300">
+                      <Check className="size-3.5" />
+                      {text.selectedFromCatalog}
+                    </span>
+                  ) : null}
+                </div>
+                <div className="max-h-56 space-y-1.5 overflow-y-auto pr-1 [scrollbar-color:rgba(34,211,238,0.35)_transparent]">
+                  {(catalog?.items ?? []).map((item) => {
+                    const selected = selectedCatalogItem?.id === item.id;
+
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => selectCatalogExercise(item)}
+                        className={cn(
+                          "flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition",
+                          selected
+                            ? "border-emerald-300/45 bg-emerald-400/10"
+                            : "border-white/[0.07] bg-slate-950/45 hover:border-cyan-300/25 hover:bg-white/[0.045]",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "grid size-9 shrink-0 place-items-center rounded-lg border",
+                            selected
+                              ? "border-emerald-300/25 bg-emerald-400/15 text-emerald-200"
+                              : "border-cyan-300/15 bg-cyan-400/[0.08] text-cyan-200",
+                          )}
+                        >
+                          {selected ? <Check className="size-4" /> : <Dumbbell className="size-4" />}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-black text-white">
+                            {titleCaseExerciseLabel(item.name)}
+                          </span>
+                          <span className="mt-0.5 block truncate text-xs text-slate-400">
+                            {[item.target, item.bodyPart, item.equipment]
+                              .filter(Boolean)
+                              .map(titleCaseExerciseLabel)
+                              .join(" · ")}
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <a
+              href="https://github.com/hasaneyldrm/exercises-dataset"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-500 transition hover:text-cyan-200"
+            >
+              {text.dataSource}
+              <ExternalLink className="size-3" />
+            </a>
+          </div>
+        </section>
+      ) : null}
+
+      <div className="flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">
+        <span className="h-px flex-1 bg-white/10" />
+        {text.manualEntry}
+        <span className="h-px flex-1 bg-white/10" />
+      </div>
+
       <div className="grid gap-2">
         <FieldLabel>{text.exercise}</FieldLabel>
         <Input
           name="exercise_name"
-          defaultValue={exercise?.exercise_name ?? ""}
+          value={exerciseName}
+          onChange={(event) => {
+            setExerciseName(event.target.value);
+
+            if (selectedCatalogItem?.name !== event.target.value) {
+              setSelectedCatalogItem(null);
+            }
+          }}
           placeholder={text.exercisePlaceholder}
           className="h-11 border-white/10 bg-slate-950/70 text-white"
           required
@@ -797,7 +1153,8 @@ function ExerciseForm({
           <FieldLabel>{text.muscleGroup}</FieldLabel>
           <NativeSelect
             name="muscle_group"
-            defaultValue={exercise?.muscle_group ?? "Chest"}
+            value={muscleGroup}
+            onChange={(event) => setMuscleGroup(event.target.value)}
           >
             {muscleOptions.map((muscle) => (
               <option key={muscle} value={muscle}>
@@ -817,6 +1174,36 @@ function ExerciseForm({
           />
         </div>
       </div>
+
+      {selectedCatalogItem ? (
+        <div className="rounded-xl border border-emerald-300/20 bg-emerald-400/[0.055] p-3">
+          <div className="grid gap-2 text-xs sm:grid-cols-2">
+            <div>
+              <span className="text-slate-500">{text.targetMuscle}</span>
+              <p className="mt-0.5 font-bold text-emerald-100">
+                {titleCaseExerciseLabel(selectedCatalogItem.target || selectedCatalogItem.muscleGroup)}
+              </p>
+            </div>
+            <div>
+              <span className="text-slate-500">{text.equipment}</span>
+              <p className="mt-0.5 font-bold text-emerald-100">
+                {titleCaseExerciseLabel(selectedCatalogItem.equipment || "None")}
+              </p>
+            </div>
+          </div>
+          {selectedCatalogItem.instruction ? (
+            <details className="mt-3 border-t border-white/10 pt-3">
+              <summary className="flex cursor-pointer list-none items-center gap-2 text-xs font-black text-cyan-200">
+                <BookOpen className="size-4" />
+                {locale === "vi" ? "Hướng dẫn tiếng Anh" : "English instructions"}
+              </summary>
+              <p className="mt-2 whitespace-pre-line text-xs leading-5 text-slate-400">
+                {selectedCatalogItem.instruction}
+              </p>
+            </details>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="grid grid-cols-3 gap-3">
         <div className="grid gap-2">
@@ -1559,7 +1946,7 @@ export function WorkoutClient({
                     {text.addExercise}
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-h-[92vh] overflow-y-auto border-cyan-300/20 bg-[#07111d] text-white sm:max-w-lg">
+                <DialogContent className="max-h-[92vh] overflow-y-auto border-cyan-300/20 bg-[#07111d] text-white sm:max-w-2xl">
                   <DialogHeader>
                     <DialogTitle className="text-xl font-black">
                       {text.addExercise}
