@@ -15,22 +15,22 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ["health", "lifestyle", "productivity"],
     icons: [
       {
-        src: "/brand/gunlifeos-brand.png",
-        sizes: "1254x1254",
+        src: "/icons/icon-192.png",
+        sizes: "192x192",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/icons/lifeos.svg",
-        sizes: "any",
-        type: "image/svg+xml",
+        src: "/icons/icon-512.png",
+        sizes: "512x512",
         purpose: "any",
+        type: "image/png",
       },
       {
-        src: "/icons/lifeos-maskable.svg",
-        sizes: "any",
-        type: "image/svg+xml",
+        src: "/icons/icon-maskable-512.png",
+        sizes: "512x512",
         purpose: "maskable",
+        type: "image/png",
       },
     ],
   };
